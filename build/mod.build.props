@@ -21,48 +21,6 @@
         <UseLocalBaseLib Condition="'$(UseLocalBaseLib)' == ''">false</UseLocalBaseLib>
     </PropertyGroup>
 
-    <UsingTask TaskName="CreateSymlink" TaskFactory="RoslynCodeTaskFactory"
-               AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-        <ParameterGroup>
-            <LinkPath ParameterType="System.String" Required="true"/>
-            <TargetPath ParameterType="System.String" Required="true"/>
-        </ParameterGroup>
-        <Task>
-            <Using Namespace="System.IO"/>
-            <Using Namespace="System.Runtime.InteropServices"/>
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    static extern int CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, int dwFlags);
-
-    if (!Directory.Exists(TargetPath))
-        Log.LogMessage(MessageImportance.High, $"NO SOURCE: {TargetPath}");
-    else if (!Directory.Exists(LinkPath) && !File.Exists(LinkPath))
-    {
-        int ok = CreateSymbolicLink(LinkPath, TargetPath, 3);
-        if (ok != 0)
-            Log.LogMessage(MessageImportance.High, $"LINKED: {LinkPath} -> {TargetPath}");
-        else
-            Log.LogError($"FAILED (error {Marshal.GetLastWin32Error()}): {LinkPath}");
-    }
-]]>
-            </Code>
-        </Task>
-    </UsingTask>
-
-    <ItemGroup>
-        <SymlinkFolders Include="src;images;fonts;localization;materials;models;scenes;animations;banks;debug_audio;shaders;themes;addons"/>
-    </ItemGroup>
-
-    <Target Name="CreateAssetSymlinks" BeforeTargets="Build"
-            Condition="'$(AssetSourcePath)' != '' and Exists('$(AssetSourcePath)')">
-        <CreateSymlink
-                LinkPath="$(MSBuildProjectDirectory)\%(SymlinkFolders.Identity)"
-                TargetPath="$(AssetSourcePath)\%(SymlinkFolders.Identity)"/>
-    </Target>
-
-
-
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <Optimize>false</Optimize>
         <DebugType>portable</DebugType>
@@ -152,9 +110,8 @@
         </ItemGroup>
     </Target>
 
-
-    <!-- Only publicize the real game DLL; RefLib reference assemblies are already public -->
-    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
+    
+    <ItemGroup>
         <Publicize Include="sts2" IncludeVirtualMembers="false" IncludeCompilerGeneratedMembers="false"/>
     </ItemGroup>
 </Project>
