@@ -202,7 +202,10 @@ jobs:
           cp "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.pck" \
              "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.dll" \
              "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.json" "dist/$MOD_NAME/"
-          zip -r "$GITHUB_WORKSPACE/$ZIP" "dist/$MOD_NAME" -j
+        
+          # Create zip archive from inside dist so 'Watcher/' is the root folder in the zip
+          (cd dist && zip -r "$GITHUB_WORKSPACE/$ZIP" "$MOD_NAME")
+        
           unzip -l "$ZIP"
 
       # Build the full body up front (banner + GitHub's auto notes) so the release is published
