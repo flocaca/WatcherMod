@@ -16,6 +16,10 @@ on:
         description: 'Also upload to NexusMods'
         type: boolean
         default: true
+      steam:
+        description: 'Also upload to Steam Workshop'
+        type: boolean
+        default: true
   push:
     tags: ['v*']
 
@@ -195,8 +199,10 @@ jobs:
           ls -la "$OUT"
 
       # Zip only the mod folder - BaseLib is a sibling in mods/ and is deliberately excluded.
+      # The .pdb sweep matters for the Steam upload too, which ships this folder as-is.
       - name: Package zip
         run: |
+          find "output/mods/$MOD_NAME" -name '*.pdb' -delete
           rm -rf dist && mkdir -p "dist/$MOD_NAME"
           cp "output/mods/$MOD_NAME/$MOD_NAME.pck" \
              "output/mods/$MOD_NAME/$MOD_NAME.dll" \
@@ -248,6 +254,29 @@ jobs:
           archive_existing_file: true
           allow_mod_manager_download: true
 
+      # ---- Steam Workshop upload (opt-in) ----
+      # Uploads output/mods/Watcher as the item content - BaseLib is a sibling folder and
+      # stays out of it. The workshop item must already exist; its id goes in the
+      # STEAM_WORKSHOP_ID repo variable, so both steps no-op until you set it.
+      - name: Generate Steam TOTP
+        if: vars.STEAM_WORKSHOP_ID != '' && (github.event_name != 'workflow_dispatch' || inputs.steam)
+        id: steam-totp
+        uses: CyberAndrii/steam-totp@v1
+        with:
+          shared_secret: ${{ secrets.STEAM_SHARED_SECRET }}
+
+      - name: Upload to Steam Workshop
+        if: vars.STEAM_WORKSHOP_ID != '' && (github.event_name != 'workflow_dispatch' || inputs.steam)
+        uses: m00nl1ght-dev/steam-workshop-deploy@v4
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          password: ${{ secrets.STEAM_PASSWORD }}
+          totp: ${{ steps.steam-totp.outputs.code }}
+          appId: 2868840
+          publishedFileId: ${{ vars.STEAM_WORKSHOP_ID }}
+          path: output/mods/Watcher
+          changeNote: "Release v${{ env.VERSION }} - https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION }}"
+
 # ---------------------------------------------------------------------------
 # Setup notes
 #
@@ -262,8 +291,13 @@ jobs:
 #    .gitignore by default in a lot of Godot templates - check `git ls-files export_presets.cfg`.
 #
 # 3. Secrets/variables needed:
-#      NEXUSMODS_API_KEY   (repo secret)
-#    GITHUB_TOKEN is provided automatically.
+#      NEXUSMODS_API_KEY     (repo secret)
+#      STEAM_USERNAME        (repo secret)  - builder account login name
+#      STEAM_PASSWORD        (repo secret)  - that account's password
+#      STEAM_SHARED_SECRET   (repo secret)  - its Steam Guard shared secret, for TOTP
+#      STEAM_WORKSHOP_ID     (repo VARIABLE, not a secret) - the id from mod_id.txt
+#    GITHUB_TOKEN is provided automatically. Leave STEAM_WORKSHOP_ID unset and the two
+#    Steam steps skip themselves - handy for the first run.
 #
 # 4. Steam branch detection from appmanifest_2868840.acf is gone - CI has no Steam install.
 #    The banner now says "version X or newer" based on min_game_version in the manifest.

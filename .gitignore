@@ -6,6 +6,8 @@
 *.kra~
 *.png~
 
+!Watcher/images/watcher/Watcher.png.import
+
 bin/
 !bin/windows/libspine_godot.windows.editor.x86_64.dll
 !bin/windows/libspine_godot.windows.template_debug.x86_64.dll
