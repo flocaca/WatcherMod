@@ -18,6 +18,7 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
+  CACHE_EPOCH: 1
   MOD_NAME: Watcher
 
 jobs:
@@ -57,8 +58,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .godot/imported
-          key: godot-import-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import') }}
-          restore-keys: godot-import-${{ env.MEGADOT_VERSION }}-
+          key: godot-import-${{ env.CACHE_EPOCH }}-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import') }}
+          restore-keys: godot-import-${{ env.CACHE_EPOCH }}-${{ env.MEGADOT_VERSION }}-
 
       - name: Download MegaDot
         if: steps.cache-engine.outputs.cache-hit != 'true'
