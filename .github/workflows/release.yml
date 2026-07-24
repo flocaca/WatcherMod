@@ -204,7 +204,7 @@ jobs:
 
       - name: Upload to NexusMods
         # Removed inputs.nexus since it wasn't defined in your workflow_dispatch inputs
-        if: github.event_name != 'workflow_dispatch' && inputs.nexus
+        if: inputs.nexus
         uses: Nexus-Mods/upload-action@v1.0.0-beta.7
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
