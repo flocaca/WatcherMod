@@ -1,4 +1,11 @@
-.godot/
+.godot/*
+!.godot/.gdignore
+
+*.uid
+*.import
+*.kra~
+*.png~
+
 bin/
 !bin/windows/libspine_godot.windows.editor.x86_64.dll
 !bin/windows/libspine_godot.windows.template_debug.x86_64.dll
