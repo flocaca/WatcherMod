@@ -50,16 +50,16 @@ jobs:
         run: |
           CURRENT=$(grep -oE '<Version>[0-9]+\.[0-9]+\.[0-9]+</Version>' build/mod.build.props | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
           if [ -n "${{ inputs.version }}" ]; then
-          VERSION="${{ inputs.version }}"
+            VERSION="${{ inputs.version }}"
           else
-          VERSION=$(echo "$CURRENT" | awk -F. '{print $1"."$2"."$3+1}')
+            VERSION=$(echo "$CURRENT" | awk -F. '{print $1"."$2"."$3+1}')
           fi
           if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-          echo "Version must be X.Y.Z, got '$VERSION'"; exit 1
+            echo "Version must be X.Y.Z, got '$VERSION'"; exit 1
           fi
           git fetch --tags --quiet
           if git rev-parse -q --verify "refs/tags/v$VERSION" > /dev/null; then
-          echo "Tag v$VERSION already exists"; exit 1
+            echo "Tag v$VERSION already exists"; exit 1
           fi
           BASELIB=$(grep -oE '<BaseLibVersion>[^<]+' build/mod.build.props | sed 's/<BaseLibVersion>//')
           
@@ -69,8 +69,8 @@ jobs:
           perl -0pi -e "s/(\"version\"\s*:\s*\")\d+\.\d+\.\d+(\")/\${1}$VERSION\${2}/" Watcher.json
           GV="${{ inputs.game_version }}"
           if [ -n "$GV" ]; then
-          GV="${GV#v}"
-          perl -0pi -e "s/(\"min_game_version\"\s*:\s*\")[^\"]+(\")/\${1}$GV\${2}/" Watcher.json
+            GV="${GV#v}"
+            perl -0pi -e "s/(\"min_game_version\"\s*:\s*\")[^\"]+(\")/\${1}$GV\${2}/" Watcher.json
           fi
           # CAVEAT (from release.ps1): NuGet BaseLib version may differ from the in-game BaseLib
           # mod version the loader checks — remove this line if they don't match.
@@ -147,7 +147,7 @@ jobs:
       # min_game_version and the BaseLib min_version stay exactly as committed.
       - name: Sync manifest version
         run: |
-          sed -i -E 's/("version"[[:space:]]*:[[:space:]]*")[0-9]+\.[0-9]+\.[0-9]+(")/\1'"$VERSION"'\2/' "$MOD_NAME.json"
+          sed -i -E 's/("version"[[:space:]]*:[[:space:]]*")[0-9]+\.[0-9]+\.[0-9]+(")/\1'"${{ env.VERSION }}"'\2/' "$MOD_NAME.json"
           grep '"version"' "$MOD_NAME.json"
 
       # Banner + release naming come from the committed manifest/csproj instead of the local
@@ -156,10 +156,7 @@ jobs:
         run: |
           GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' "$MOD_NAME.json" | sed -E 's/.*"([^"]+)"$/\1/')
           BASELIB=$(grep -oE '<BaseLibVersion>[^<]+</BaseLibVersion>' "$MOD_NAME.csproj" | sed -E 's/<\/?BaseLibVersion>//g')
-          
-          # Use ${{ env.VERSION }} to guarantee it is pulled from GITHUB_ENV
           DISPLAY="$DISPLAY_BASE - ${{ env.VERSION }} - StS2 - v$GAME"
-          
           # GitHub dots out spaces in asset names, so the zip name stays space-free.
           SAFE=$(echo "$DISPLAY" | sed 's/ - /-/g; s/ /_/g')
           {
@@ -182,9 +179,9 @@ jobs:
             /p:GodotPath="$GODOT_PATH" \
             /p:ModsPath="$RUNNER_TEMP/output/mods/" \
             /p:SkipGodotImport=true \
-            /p:Version="$VERSION" \
-            /p:AssemblyVersion="$VERSION.0" \
-            /p:FileVersion="$VERSION.0"
+            /p:Version="${{ env.VERSION }}" \
+            /p:AssemblyVersion="${{ env.VERSION }}.0" \
+            /p:FileVersion="${{ env.VERSION }}.0"
 
       # GodotPublish uses ContinueOnError="WarnAndContinue", so a failed .pck export would
       # otherwise sail through as a green build with no assets in the zip.
@@ -215,7 +212,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          AUTO=$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="v$VERSION" -q .body)
+          AUTO=$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="v${{ env.VERSION }}" -q .body)
           {
             echo "Works with Slay the Spire 2 version $GAME_VERSION or newer."
             echo "Works with BaseLib $BASELIB (not included - install it separately)."
@@ -233,7 +230,7 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "v$VERSION" "$ZIP" --title "$DISPLAY" --notes-file body.md
+        run: gh release create "v${{ env.VERSION }}" "$ZIP" --title "$DISPLAY" --notes-file body.md
 
       # NexusMods upload lives here rather than in a separate release-triggered workflow:
       # a release created with GITHUB_TOKEN does not fire the `release: published` event,
