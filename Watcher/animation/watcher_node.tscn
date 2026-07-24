@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://d2fagke4q7e0q"]
+[gd_scene load_steps=2 format=3 ]
 
-[ext_resource type="SpineSkeletonDataResource" uid="uid://bdapmsjn710l5" path="res://Watcher/animation/watcher_skel_data.tres" id="1_egocj"]
+[ext_resource type="SpineSkeletonDataResource" path="res://Watcher/animation/watcher_skel_data.tres" id="1_egocj"]
 
 [node name="WatcherNode" type="SpineSprite"]
 skeleton_data_res = ExtResource("1_egocj")

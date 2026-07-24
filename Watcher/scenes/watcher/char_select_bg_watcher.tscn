@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cx5rdp7ge8w72"]
+[gd_scene load_steps=2 format=3 ]
 
-[ext_resource type="Texture2D" uid="uid://wkvrvp1nvurr" path="res://Watcher/images/watcher/watcherPortrait.jpg" id="1_xisa5"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/watcherPortrait.jpg" id="1_xisa5"]
 
 [node name="WatcherBg" type="Control"]
 layout_mode = 3

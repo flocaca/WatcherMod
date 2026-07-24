@@ -1,8 +1,8 @@
-[gd_scene load_steps=18 format=3 uid="uid://bciaqknwjde85"]
+[gd_scene load_steps=18 format=3 ]
 
-[ext_resource type="PackedScene" uid="uid://d2fagke4q7e0q" path="res://Watcher/animation/watcher_node.tscn" id="1_56wj0"]
-[ext_resource type="PackedScene" uid="uid://b6pjrayk8hfxt" path="res://Watcher/animation/eye/eye_godot.tscn" id="2_y6iu2"]
-[ext_resource type="Texture2D" uid="uid://cj8jbf5tbarb4" path="res://Watcher/images/watcher/corpse.png" id="3_y6iu2"]
+[ext_resource type="PackedScene" path="res://Watcher/animation/watcher_node.tscn" id="1_56wj0"]
+[ext_resource type="PackedScene" path="res://Watcher/animation/eye/eye_godot.tscn" id="2_y6iu2"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/corpse.png" id="3_y6iu2"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_bn4x6"]
 animation = &"attack"

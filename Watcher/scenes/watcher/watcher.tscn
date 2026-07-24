@@ -1,9 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://kq7dmrg0ygyf"]
+[gd_scene load_steps=20 format=3 ]
 
-[ext_resource type="Script" uid="uid://claogp36kh2hu" path="res://Code/Nodes/WatcherNCreatureVisuals.cs" id="1_se58w"]
-[ext_resource type="PackedScene" uid="uid://d2fagke4q7e0q" path="res://Watcher/animation/watcher_node.tscn" id="2_o1arn"]
-[ext_resource type="PackedScene" uid="uid://b6pjrayk8hfxt" path="res://Watcher/animation/eye/eye_godot.tscn" id="3_vk6fc"]
-[ext_resource type="Texture2D" uid="uid://cj8jbf5tbarb4" path="res://Watcher/images/watcher/corpse.png" id="4_36303"]
+[ext_resource type="Script" path="res://Code/Nodes/WatcherNCreatureVisuals.cs" id="1_se58w"]
+[ext_resource type="PackedScene" path="res://Watcher/animation/watcher_node.tscn" id="2_o1arn"]
+[ext_resource type="PackedScene" path="res://Watcher/animation/eye/eye_godot.tscn" id="3_vk6fc"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/corpse.png" id="4_36303"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_bn4x6"]
 animation = &"Attack"

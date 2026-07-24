@@ -1,7 +1,7 @@
-[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 uid="uid://bdapmsjn710l5"]
+[gd_resource type="SpineSkeletonDataResource" load_steps=3 format=3 ]
 
-[ext_resource type="SpineAtlasResource" uid="uid://7cp1aqv5vp7d" path="res://Watcher/animation/watcher.spatlas" id="1_sgcdr"]
-[ext_resource type="SpineSkeletonFileResource" uid="uid://c2jfujr2i6f4u" path="res://Watcher/animation/watcher.spskel" id="2_mgs82"]
+[ext_resource type="SpineAtlasResource" path="res://Watcher/animation/watcher.spatlas" id="1_sgcdr"]
+[ext_resource type="SpineSkeletonFileResource" path="res://Watcher/animation/watcher.spskel" id="2_mgs82"]
 
 [resource]
 atlas_res = ExtResource("1_sgcdr")

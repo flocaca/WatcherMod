@@ -148,6 +148,10 @@
         <None Include=".gitignore"/>
         <None Include="Watcher.json"/>
         <None Include="project.godot"/>
+        <Content Include=".run\Slay the Spire 2 Client1001.run.xml" />
+        <Content Include=".run\Slay the Spire 2 Host.run.xml" />
+        <Content Include=".run\Slay the Spire 2 no build.run.xml" />
+        <Content Include=".run\Slay the Spire 2.run.xml" />
         <Content Include="Code\Compatibility\CompatibilityCreatureCmd.cs.uid" />
         <Content Include="local.props"/>
         <Content Include="local.props.example"/>

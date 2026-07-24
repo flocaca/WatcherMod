@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://c3fnbhvivghlt"]
+[gd_scene load_steps=2 format=3 ]
 
-[ext_resource type="Texture2D" uid="uid://bwunme6pccw3i" path="res://Watcher/animation/watcher.png" id="1_dd6cn"]
+[ext_resource type="Texture2D" path="res://Watcher/animation/watcher.png" id="1_dd6cn"]
 
 [node name="WatcherGodot" type="Node2D"]
 rotation = -0.014004415

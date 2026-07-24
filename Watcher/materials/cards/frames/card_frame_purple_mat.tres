@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://16gvv31kjeb7"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 ]
 
 [ext_resource type="Shader" path="res://Watcher/shaders/hsv.gdshader" id="1_4rywm"]
 

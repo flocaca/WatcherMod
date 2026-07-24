@@ -1,12 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://b6brl14m1iebo"]
+[gd_scene load_steps=11 format=3 ]
 
-[ext_resource type="Texture2D" uid="uid://ccgcgr55n0c5w" path="res://Watcher/images/watcher/bg_back.png" id="1_4t88c"]
-[ext_resource type="Texture2D" uid="uid://br0fd4vx8mqmp" path="res://Watcher/images/watcher/arm_right.png" id="2_bt32b"]
-[ext_resource type="Texture2D" uid="uid://dee3vyuf43ue3" path="res://Watcher/images/watcher/body.png" id="3_bt32b"]
-[ext_resource type="Texture2D" uid="uid://ie4utmnjucv1" path="res://Watcher/images/watcher/arm_left.png" id="4_3rp5k"]
-[ext_resource type="Script" uid="uid://b8biumt0c52d" path="res://Code/Nodes/Stances/DivinityEyeSpawner.cs" id="5_3rp5k"]
-[ext_resource type="Script" uid="uid://bkomx7o6n4m6x" path="res://Code/Nodes/Stances/DivinityActivationBurst.cs" id="5_lq1yu"]
-[ext_resource type="Script" uid="uid://lu7usvkljwkr" path="res://Code/Nodes/Stances/AuraBlobEmitter.cs" id="6_bt32b"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/bg_back.png" id="1_4t88c"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/arm_right.png" id="2_bt32b"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/body.png" id="3_bt32b"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/arm_left.png" id="4_3rp5k"]
+[ext_resource type="Script" path="res://Code/Nodes/Stances/DivinityEyeSpawner.cs" id="5_3rp5k"]
+[ext_resource type="Script" path="res://Code/Nodes/Stances/DivinityActivationBurst.cs" id="5_lq1yu"]
+[ext_resource type="Script" path="res://Code/Nodes/Stances/AuraBlobEmitter.cs" id="6_bt32b"]
 
 [sub_resource type="Animation" id="Animation_lq1yu"]
 length = 0.001
