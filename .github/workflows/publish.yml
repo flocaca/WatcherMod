@@ -18,7 +18,6 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
-  CACHE_EPOCH: 2
   MOD_NAME: Watcher
 
 jobs:
@@ -58,8 +57,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .godot/imported
-          key: godot-import-${{ env.CACHE_EPOCH }}-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import') }}
-          restore-keys: godot-import-${{ env.CACHE_EPOCH }}-${{ env.MEGADOT_VERSION }}-
+          key: godot-import-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import') }}
+          restore-keys: godot-import-${{ env.MEGADOT_VERSION }}-
 
       - name: Download MegaDot
         if: steps.cache-engine.outputs.cache-hit != 'true'
@@ -74,9 +73,12 @@ jobs:
 
       - name: Install engine
         run: |
-          unzip -q megadot.zip -d megadot
-          chmod +x megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64
-          echo "GODOT_PATH=$(pwd)/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+          # Engine goes OUTSIDE the project dir - anything under it gets scanned by
+          # Godot's filesystem and packed into the .pck by --export-pack.
+          unzip -q megadot.zip -d "$RUNNER_TEMP/megadot"
+          chmod +x "$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64"
+          echo "GODOT_PATH=$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+          # Spine MUST stay in the project - extension_list.cfg points at res://bin/.
           unzip -oq spine-godot.zip -d "${{ github.workspace }}"
 
       # First cold import often exits non-zero while bootstrapping .godot/ - run it twice.
@@ -88,16 +90,17 @@ jobs:
 
       - name: Publish
         run: |
-          mkdir -p "${{ github.workspace }}/output/mods"
+          mkdir -p "$RUNNER_TEMP/output/mods"
           dotnet publish "$MOD_NAME.csproj" -c Release \
             /p:GodotPath="$GODOT_PATH" \
-            /p:ModsPath="${{ github.workspace }}/output/mods/"
+            /p:ModsPath="$RUNNER_TEMP/output/mods/" \
+            /p:SkipGodotImport=true
 
       # GodotPublish uses ContinueOnError="WarnAndContinue", so a failed .pck export would
       # otherwise pass as a green build with no assets in the artifact.
       - name: Verify build output
         run: |
-          OUT="output/mods/$MOD_NAME"
+          OUT="$RUNNER_TEMP/output/mods/$MOD_NAME"
           for f in "$MOD_NAME.dll" "$MOD_NAME.pck" "$MOD_NAME.json"; do
             [ -f "$OUT/$f" ] || { echo "::error::Missing build output $OUT/$f"; exit 1; }
           done
@@ -107,5 +110,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Watcher
-          path: output/mods/Watcher
+          path: ${{ runner.temp }}/output/mods/Watcher
           retention-days: 14

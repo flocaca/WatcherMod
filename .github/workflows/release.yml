@@ -144,9 +144,12 @@ jobs:
 
       - name: Install engine
         run: |
-          unzip -q megadot.zip -d megadot
-          chmod +x megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64
-          echo "GODOT_PATH=$(pwd)/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+          # Engine goes OUTSIDE the project dir - anything under it gets scanned by
+          # Godot's filesystem and packed into the .pck by --export-pack.
+          unzip -q megadot.zip -d "$RUNNER_TEMP/megadot"
+          chmod +x "$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64"
+          echo "GODOT_PATH=$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+          # Spine MUST stay in the project - extension_list.cfg points at res://bin/.
           unzip -oq spine-godot.zip -d "${{ github.workspace }}"
 
       # Patch the manifest's "version" to match the tag (build-time only, never committed).
@@ -180,10 +183,11 @@ jobs:
 
       - name: Publish
         run: |
-          mkdir -p "${{ github.workspace }}/output/mods"
+          mkdir -p "$RUNNER_TEMP/output/mods"
           dotnet publish "$MOD_NAME.csproj" -c Release \
             /p:GodotPath="$GODOT_PATH" \
-            /p:ModsPath="${{ github.workspace }}/output/mods/" \
+            /p:ModsPath="$RUNNER_TEMP/output/mods/" \
+            /p:SkipGodotImport=true \
             /p:Version="$VERSION" \
             /p:AssemblyVersion="$VERSION.0" \
             /p:FileVersion="$VERSION.0"
@@ -192,7 +196,7 @@ jobs:
       # otherwise sail through as a green build with no assets in the zip.
       - name: Verify build output
         run: |
-          OUT="output/mods/$MOD_NAME"
+          OUT="$RUNNER_TEMP/output/mods/$MOD_NAME"
           for f in "$MOD_NAME.dll" "$MOD_NAME.pck" "$MOD_NAME.json"; do
             [ -f "$OUT/$f" ] || { echo "::error::Missing build output $OUT/$f"; exit 1; }
           done
@@ -202,11 +206,11 @@ jobs:
       # The .pdb sweep matters for the Steam upload too, which ships this folder as-is.
       - name: Package zip
         run: |
-          find "output/mods/$MOD_NAME" -name '*.pdb' -delete
+          find "$RUNNER_TEMP/output/mods/$MOD_NAME" -name '*.pdb' -delete
           rm -rf dist && mkdir -p "dist/$MOD_NAME"
-          cp "output/mods/$MOD_NAME/$MOD_NAME.pck" \
-             "output/mods/$MOD_NAME/$MOD_NAME.dll" \
-             "output/mods/$MOD_NAME/$MOD_NAME.json" "dist/$MOD_NAME/"
+          cp "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.pck" \
+             "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.dll" \
+             "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.json" "dist/$MOD_NAME/"
           (cd dist && zip -r "../$ZIP" "$MOD_NAME")
           unzip -l "$ZIP"
 
@@ -255,7 +259,7 @@ jobs:
           allow_mod_manager_download: true
 
       # ---- Steam Workshop upload (opt-in) ----
-      # Uploads output/mods/Watcher as the item content - BaseLib is a sibling folder and
+      # Uploads the built mod folder as the item content - BaseLib is a sibling folder and
       # stays out of it. The workshop item must already exist; its id goes in the
       # STEAM_WORKSHOP_ID repo variable, so both steps no-op until you set it.
       - name: Generate Steam TOTP
@@ -274,7 +278,7 @@ jobs:
           totp: ${{ steps.steam-totp.outputs.code }}
           appId: 2868840
           publishedFileId: ${{ vars.STEAM_WORKSHOP_ID }}
-          path: output/mods/Watcher
+          path: ${{ runner.temp }}/output/mods/Watcher
           changeNote: "Release v${{ env.VERSION }} - https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION }}"
 
 # ---------------------------------------------------------------------------

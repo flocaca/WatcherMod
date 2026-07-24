@@ -4,7 +4,6 @@
         <ImplicitUsings>true</ImplicitUsings>
         <Nullable>enable</Nullable> <!--Makes code analysis regarding null values stricter.-->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <DefaultItemExcludes>packages/**</DefaultItemExcludes>
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
         <RootNamespace>Watcher</RootNamespace>
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -21,13 +20,17 @@
         <FileVersion>1.5.5.0</FileVersion>
         <Version>1.5.5</Version>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <BaseLibVersion>3.3.8</BaseLibVersion>
         <UseCustomBaseLib>false</UseCustomBaseLib>
         <CustomBaseLibRepo>C:\Users\lamal\Desktop\Programmieren\sts2mods\BaseLib-StS2</CustomBaseLibRepo>
     </PropertyGroup>
     
+    <PropertyGroup>
+        <AssetFolder>Watcher</AssetFolder>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <Optimize>false</Optimize>
         <DebugType>portable</DebugType>
@@ -87,12 +90,14 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <!-- Diasble architecture mismatch warning; mods are ideally built for all platforms (MSIL)
-             while your local StS2 version will be for your specific platform. -->
-        <NoWarn>$(NoWarn);MSB3270</NoWarn>
+        <!-- MSB3270: mods are built as MSIL while the local StS2 install is platform-specific.
+             CS0436: Krafs' generated IgnoresAccessChecksToAttribute vs the copy inside 0Harmony;
+             the compiler picks the local one, which is what we want. -->
+        <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
     </PropertyGroup>
 
 
+    <!-- Game assemblies: real DLLs when StS2 is installed locally... -->
     <ItemGroup Condition="Exists('$(Sts2DataDir)')">
         <Reference Include="0Harmony">
             <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
@@ -108,11 +113,12 @@
         </Reference>
     </ItemGroup>
 
+    <!-- ...reference assemblies from NuGet when it isn't (CI). -->
     <ItemGroup Condition="!Exists('$(Sts2DataDir)')">
         <PackageReference Include="Book.StS2.RefLib" Version="*-*" PrivateAssets="all"/>
         <PackageReference Include="SmartFormat.NET" Version="3.*" ExcludeAssets="runtime" PrivateAssets="all"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <!-- NuGet BaseLib -->
         <PackageReference Include="Alchyr.Sts2.BaseLib" Version="$(BaseLibVersion)" PrivateAssets="All"
@@ -125,43 +131,43 @@
         </Reference>
         <PackageReference Include="Krafs.Publicizer" Version="2.3.0" PrivateAssets="All"/>
         <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="0.1.9"/>
-        <AdditionalFiles Include="Watcher/localization/**/*.json"/>
+        <AdditionalFiles Include="$(AssetFolder)/localization/**/*.json"/>
     </ItemGroup>
+    
     <ItemGroup Condition="Exists('$(Sts2DataDir)')">
         <Publicize Include="sts2" IncludeVirtualMembers="false" IncludeCompilerGeneratedMembers="false"/>
     </ItemGroup>
 
-
-    <!-- CI only: RefLib generates its own IgnoresAccessChecksToAttribute, which collides with
-     Krafs's bundled copy (CS0101/CS0121). ExcludeAssets doesn't stop it (Krafs injects the
-     file via its .targets), so strip it from the Compile items directly before compiling. -->
+    
     <Target Name="RemoveDuplicateKrafsAttribute" BeforeTargets="CoreCompile"
             Condition="!Exists('$(Sts2DataDir)')">
         <ItemGroup>
             <Compile Remove="$(NuGetPackageRoot)krafs.publicizer/**/IgnoresAccessChecksToAttribute.cs"/>
         </ItemGroup>
     </Target>
-    
+
+    <!-- Assets are not code. WatcherCode/ is picked up by the SDK's default glob. -->
     <ItemGroup>
-        <Compile Remove="Watcher/**"/>
+        <Compile Remove="$(AssetFolder)/**"/>
         <Compile Remove="shaders/**"/>
-        <EmbeddedResource Remove="Watcher/**"/>
+        <EmbeddedResource Remove="$(AssetFolder)/**"/>
         <EmbeddedResource Remove="shaders/**"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="release.ps1"/>
         <None Include=".gitignore"/>
         <None Include="Watcher.json"/>
         <None Include="project.godot"/>
+        <None Include="cardloc-presets.json"/>
+        <None Include="$(AssetFolder)/**"/>
+        <None Include="build/**"/>
         <Content Include="local.props"/>
         <Content Include="local.props.example"/>
-        <None Include="Watcher/**"/>
-        <None Include="cardloc-presets.json"/>
+        <Content Include=".editorconfig"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include=".editorconfig"/>
+      <Folder Include=".godot\" />
     </ItemGroup>
 
 
@@ -191,7 +197,7 @@
         <Message Text="BaseLib source: $([MSBuild]::ValueOrDefault('$(UseCustomBaseLib)', 'false')) (custom) — files: @(BaseLibFiles)" Importance="high"/>
         <Copy SourceFiles="@(BaseLibFiles)" DestinationFolder="$(ModsPath)BaseLib/"/>
     </Target>
-
+    
     <Target Name="GodotImport" BeforeTargets="GodotPublish"
             Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(SkipGodotImport)' != 'true'">
         <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; --import --quit --extra-args --no-window"
@@ -199,10 +205,13 @@
               IgnoreExitCode="true"
               IgnoreStandardErrorWarningFormat="true"/>
     </Target>
-
+    
     <Target Name="GodotPublish" AfterTargets="Publish"
             Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; -s build/pack_mod.gd -- &quot;$(ModsPath)$(MSBuildProjectName)/$(MSBuildProjectName).pck&quot; Watcher Code"
+        <Error Condition="!Exists('$(MSBuildProjectDirectory)/$(AssetFolder)')"
+               Text="Asset folder '$(AssetFolder)' not found - the .pck would be empty."/>
+        <Message Text="--- PACKING: $(AssetFolder) ---" Importance="high"/>
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; -s build/pack_mod.gd -- &quot;$(ModsPath)$(MSBuildProjectName)/$(MSBuildProjectName).pck&quot; $(AssetFolder)"
               EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
               IgnoreExitCode="false"/>
     </Target>
