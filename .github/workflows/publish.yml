@@ -15,6 +15,7 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
+  GODOT_CACHE_ID: 1
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -46,32 +47,13 @@ jobs:
           key: nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
           restore-keys: nuget-
 
-      # ---- ImageGen atlas cache ----
-      # Persist ImageGen's own hash-based incremental cache (CI-safe) plus the generated
-      # atlas outputs it diffs against. restore-keys means a single changed image reuses the
-      # newest prior cache and only that image is repacked (no --repack, which would wipe it).
-      - name: Cache image atlas outputs
-        uses: actions/cache@v4
-        with:
-          path: |
-            ImageGen/.cards_cache.json
-            ImageGen/.powers_cache.json
-            ImageGen/.relics_cache.json
-            ImageGen/.potions_cache.json
-            ImageGen/.enchantments_cache.json
-            */images/atlases
-            */images/powers
-            */images/relics
-            */images/enchantments
-          key: atlases-${{ hashFiles('ImageGen/images/**/*.png') }}
-          restore-keys: atlases-
 
       - name: Cache Godot import results
         uses: actions/cache@v4
         with:
           path: .godot/imported
-          key: godot-import-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import') }}
-          restore-keys: godot-import-${{ env.MEGADOT_VERSION }}-
+          key: godot-import-${{ env.GODOT_CACHE_ID }}-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import', '**/*.uid') }}
+          restore-keys: godot-import-${{ env.GODOT_CACHE_ID }}-${{ env.MEGADOT_VERSION }}-
 
       - name: Download MegaDot
         if: steps.cache-engine.outputs.cache-hit != 'true'
@@ -90,11 +72,6 @@ jobs:
           echo "GODOT_PATH=$(pwd)/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
           unzip -oq spine-godot.zip -d "${{ github.workspace }}"
 
-      # Generate the texture atlases BEFORE Godot imports them.
-      # No --repack: that flag forces a full rebuild by wiping the cache
-      # (`if (Force) groupCache = new JsonObject()`), defeating the cache above.
-      - name: Build image atlases
-        run: dotnet run --project ImageGen -c Release
 
       # First cold import often exits non-zero while bootstrapping .godot/ — run twice.
       # With a warm import cache this step only re-imports changed assets.
