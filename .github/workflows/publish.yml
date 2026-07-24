@@ -18,7 +18,7 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
-  CACHE_EPOCH: 1
+  CACHE_EPOCH: 2
   MOD_NAME: Watcher
 
 jobs:
