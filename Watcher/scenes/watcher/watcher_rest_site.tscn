@@ -1,8 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://hb16i2q8aa1r"]
+[gd_scene load_steps=4 format=3 ]
 
-[ext_resource type="Script" uid="uid://co1bjhn8xucpa" path="res://WatcherCode/Nodes/WatcherNRestSiteCharacter.cs" id="1_awmq8"]
-[ext_resource type="Texture2D" uid="uid://df1vny244ee1k" path="res://Watcher/images/watcher/sitting.png" id="2_ynh71"]
-[ext_resource type="PackedScene" uid="uid://bgy88bk44xxvk" path="res://scenes/ui/selection_reticle.tscn" id="3_ynh71"]
+[ext_resource type="Script" path="res://WatcherCode/Nodes/WatcherNRestSiteCharacter.cs" id="1_awmq8"]
+[ext_resource type="Texture2D" path="res://Watcher/images/watcher/sitting.png" id="2_ynh71"]
+[ext_resource type="PackedScene" path="res://scenes/ui/selection_reticle.tscn" id="3_ynh71"]
 
 [node name="RegentRestSite" type="Node2D"]
 scale = Vector2(0.760006, 0.760006)

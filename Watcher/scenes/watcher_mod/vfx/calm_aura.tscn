@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" uid="uid://b0yenusod1inp" path="res://WatcherCode/Nodes/Stances/CalmFrostStreakSpawner.cs" id="1_streak"]
-[ext_resource type="Script" uid="uid://dvk55w33fit78" path="res://WatcherCode/Nodes/Stances/AuraBlobEmitter.cs" id="2_blobs"]
+[ext_resource type="Script" path="res://WatcherCode/Nodes/Stances/CalmFrostStreakSpawner.cs" id="1_streak"]
+[ext_resource type="Script" path="res://WatcherCode/Nodes/Stances/AuraBlobEmitter.cs" id="2_blobs"]
 
 
 [node name="CalmAura" type="Node2D"]

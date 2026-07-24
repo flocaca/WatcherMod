@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" uid="uid://d3snrmrywm7" path="res://WatcherCode/Nodes/WatcherNParticlesContainer.cs" id="1_ek0ca"]
+[ext_resource type="Script" path="res://WatcherCode/Nodes/WatcherNParticlesContainer.cs" id="1_ek0ca"]
 [ext_resource type="PackedScene" path="res://Watcher/scenes/watcher/vfx_common_specks.tscn" id="2_peqvm"]
 
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=18 format=3]
 
-[ext_resource type="Material" uid="uid://blg076y3vypkh" path="res://materials/vfx/common/vfx_speck_glow_white.tres" id="1_hqlpk"]
-[ext_resource type="Texture2D" uid="uid://cf2vs1ipk3r3i" path="res://Watcher/images/ui/combat/energy_counters/common_glow_speck.png" id="2_2rlyg"]
+[ext_resource type="Material" path="res://materials/vfx/common/vfx_speck_glow_white.tres" id="1_hqlpk"]
+[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/common_glow_speck.png" id="2_2rlyg"]
 
 
 [sub_resource type="Curve" id="Curve_hyyfl"]
