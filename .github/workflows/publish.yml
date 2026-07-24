@@ -15,7 +15,6 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
-  GODOT_CACHE_ID: 0
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -52,8 +51,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .godot/imported
-          key: godot-import-${{ env.GODOT_CACHE_ID }}-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import', '**/*.uid') }}
-          restore-keys: godot-import-${{ env.GODOT_CACHE_ID }}-${{ env.MEGADOT_VERSION }}-
+          key: godot-import-${{ env.MEGADOT_VERSION }}-${{ hashFiles('**/*.png', '**/*.svg', '**/*.wav', '**/*.ogg', '**/*.spine-json', '**/*.skel', '**/*.import', '**/*.uid') }}
+          restore-keys: godot-import-${{ env.MEGADOT_VERSION }}-
 
       - name: Download MegaDot
         if: steps.cache-engine.outputs.cache-hit != 'true'
