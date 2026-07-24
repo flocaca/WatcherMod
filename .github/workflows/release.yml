@@ -1,8 +1,4 @@
 name: Release
-
-# Replaces release.ps1. Two ways in:
-#   * workflow_dispatch -> bumps versions in the repo, commits, tags, then builds/releases
-#   * push of a v* tag  -> version comes from the tag, nothing is committed
 on:
   workflow_dispatch:
     inputs:
@@ -10,41 +6,30 @@ on:
         description: 'Version (X.Y.Z). Leave empty to auto-bump the patch number.'
         required: false
       game_version:
-        description: 'StS2 version for min_game_version (e.g. 0.107.1). Empty = keep current.'
+        description: 'STS2 version for min_game_version (e.g. 0.107.1). Empty = keep current.'
         required: false
-      nexus:
-        description: 'Also upload to NexusMods'
-        type: boolean
-        default: true
       steam:
         description: 'Also upload to Steam Workshop'
         type: boolean
         default: true
   push:
-    tags: [ 'v*' ]
-
+    tags: ['v*']
 permissions:
   contents: write
-
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
-  MOD_NAME: Watcher
-  DISPLAY_BASE: The Watcher
-
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # Nothing generated should be in git; make sure a stale checkout can't poison the build.
       - name: Clean stale build artifacts
-        run: rm -rf .godot obj bin dist
+        run: rm -rf .godot obj bin
 
-      # Manual runs only: the CI equivalent of release.ps1's front half.
-      # Pushes made with GITHUB_TOKEN don't retrigger workflows, so the tag push below
-      # will NOT cause a second run of this workflow.
+      # Manual runs: bump versions in the repo, commit, and tag — the CI replacement for release.ps1's
+      # front half. Pushes made with GITHUB_TOKEN don't retrigger workflows, so no double run.
       - name: Bump versions and tag (manual runs)
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -62,7 +47,7 @@ jobs:
             echo "Tag v$VERSION already exists"; exit 1
           fi
           BASELIB=$(grep -oE '<BaseLibVersion>[^<]+' build/mod.build.props | sed 's/<BaseLibVersion>//')
-          
+
           perl -0pi -e "s/<Version>\d+\.\d+\.\d+<\/Version>/<Version>$VERSION<\/Version>/" build/mod.build.props
           perl -0pi -e "s/<AssemblyVersion>\d+\.\d+\.\d+\.\d+<\/AssemblyVersion>/<AssemblyVersion>$VERSION.0<\/AssemblyVersion>/" build/mod.build.props
           perl -0pi -e "s/<FileVersion>\d+\.\d+\.\d+\.\d+<\/FileVersion>/<FileVersion>$VERSION.0<\/FileVersion>/" build/mod.build.props
@@ -75,7 +60,7 @@ jobs:
           # CAVEAT (from release.ps1): NuGet BaseLib version may differ from the in-game BaseLib
           # mod version the loader checks — remove this line if they don't match.
           perl -0pi -e "s/(\"id\"\s*:\s*\"BaseLib\"\s*,\s*\"min_version\"\s*:\s*\")[^\"]+(\")/\${1}$BASELIB\${2}/" Watcher.json
-          
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add build/mod.build.props Watcher.json
@@ -84,21 +69,10 @@ jobs:
           git push origin "HEAD:$GITHUB_REF_NAME" --tags
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
-      # Tag pushes: v1.2.3 -> 1.2.3. Manual runs already set VERSION above.
-      - name: Set version from tag
-        if: github.event_name != 'workflow_dispatch'
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Tag must be vX.Y.Z, got $GITHUB_REF_NAME"; exit 1
-          fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      # ---- Caches ----
       - name: Cache engine downloads
         id: cache-engine
         uses: actions/cache@v4
@@ -124,9 +98,8 @@ jobs:
 
       - name: Download MegaDot
         if: steps.cache-engine.outputs.cache-hit != 'true'
-        run: curl -fL --retry 3 -o megadot.zip "https://megadot.megacrit.com/${MEGADOT_VERSION}/megadot-${MEGADOT_VERSION}-linux-x86_64-editor-csharp.zip"
+        run: curl -L -o megadot.zip "https://megadot.megacrit.com/${MEGADOT_VERSION}/megadot-${MEGADOT_VERSION}-linux-x86_64-editor-csharp.zip"
 
-      # Drop this step (and the spine unzip below) if the project has no spine assets.
       - name: Download spine-godot extension
         if: steps.cache-engine.outputs.cache-hit != 'true'
         run: |
@@ -135,40 +108,52 @@ jobs:
 
       - name: Install engine
         run: |
-          # Engine goes OUTSIDE the project dir - anything under it gets scanned by
-          # Godot's filesystem and packed into the .pck by --export-pack.
-          unzip -q megadot.zip -d "$RUNNER_TEMP/megadot"
-          chmod +x "$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64"
-          echo "GODOT_PATH=$RUNNER_TEMP/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
-          # Spine MUST stay in the project - extension_list.cfg points at res://bin/.
+          unzip -q megadot.zip -d megadot
+          chmod +x megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64
+          echo "GODOT_PATH=$(pwd)/megadot/MegaDot_v4.5.1-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
           unzip -oq spine-godot.zip -d "${{ github.workspace }}"
 
-      # Patch the manifest's "version" to match the tag (build-time only, never committed).
-      # min_game_version and the BaseLib min_version stay exactly as committed.
+      # Tag pushes: version comes from the tag (v1.2.3 -> 1.2.3). Manual runs set VERSION in the bump step.
+      - name: Set version from tag
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Tag must be vX.Y.Z, got $GITHUB_REF_NAME"; exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      # Patch the manifest's top-level "version" to match the tag (build-time only, not committed).
+      # min_game_version and the BaseLib min_version stay as committed in the repo.
       - name: Sync manifest version
         run: |
-          sed -i -E 's/("version"[[:space:]]*:[[:space:]]*")[0-9]+\.[0-9]+\.[0-9]+(")/\1'"${{ env.VERSION }}"'\2/' "$MOD_NAME.json"
-          grep '"version"' "$MOD_NAME.json"
+          sed -i -E 's/("version"[[:space:]]*:[[:space:]]*")[0-9]+\.[0-9]+\.[0-9]+(")/\1'"$VERSION"'\2/' Watcher.json
+          grep '"version"' Watcher.json
 
-      # Banner + release naming come from the committed manifest/props instead of the local
-      # game install and the Steam appmanifest (neither exists in CI).
-      - name: Resolve release metadata
-        run: |
-          GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' "$MOD_NAME.json" | sed -E 's/.*"([^"]+)"$/\1/')
-          BASELIB=$(grep -oE '<BaseLibVersion>[^<]+' build/mod.build.props | sed 's/<BaseLibVersion>//' | tr -d '\r\n')
-          
-          DISPLAY="$DISPLAY_BASE - ${{ env.VERSION }} - StS2 - v$GAME"
-          # GitHub dots out spaces in asset names, so the zip name stays space-free.
-          SAFE=$(echo "$DISPLAY" | sed 's/ - /-/g; s/ /_/g')
-          
-          {
-            echo "GAME_VERSION=$GAME"
-            echo "BASELIB=${BASELIB:-unknown}"
-            echo "DISPLAY=$DISPLAY"
-            echo "ZIP=$SAFE.zip"
-          } >> "$GITHUB_ENV"
+      # Persist ImageGen's own incremental cache (hash-based, so CI-safe) plus the generated
+      # atlas outputs it diffs against. Keyed on the source images — any art change re-runs
+      # only the changed items, everything else is restored. No --repack (that flag forces a
+      # full rebuild by wiping the cache: `if (Force) groupCache = new JsonObject()`).
+      # NOTE: caching every submod images/ dir so no Pack* output subfolder is missed.
+      - name: Cache image atlas outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            ImageGen/.cards_cache.json
+            ImageGen/.powers_cache.json
+            ImageGen/.relics_cache.json
+            ImageGen/.potions_cache.json
+            ImageGen/.enchantments_cache.json
+            */images/atlases
+            */images/powers
+            */images/relics
+            */images/enchantments
+          key: atlases-${{ hashFiles('ImageGen/images/**/*.png') }}
+          restore-keys: atlases-
 
-      # First cold import often exits non-zero while bootstrapping .godot/ - run it twice.
+      - name: Build image atlases
+        run: dotnet run --project ImageGen -c Release
+
       - name: Import Godot resources
         run: |
           "$GODOT_PATH" --headless --audio-driver Dummy --import || true
@@ -176,88 +161,48 @@ jobs:
 
       - name: Publish
         run: |
-          mkdir -p "$RUNNER_TEMP/output/mods"
-          dotnet publish "$MOD_NAME.csproj" -c Release \
+          mkdir -p "${{ github.workspace }}/output/mods"
+          dotnet publish Watcher.csproj -c Release \
             /p:GodotPath="$GODOT_PATH" \
-            /p:ModsPath="$RUNNER_TEMP/output/mods/" \
+            /p:ModsPath="${{ github.workspace }}/output/mods/" \
             /p:SkipGodotImport=true \
-            /p:Version="${{ env.VERSION }}" \
-            /p:AssemblyVersion="${{ env.VERSION }}.0" \
-            /p:FileVersion="${{ env.VERSION }}.0"
+            /p:Version="$VERSION" \
+            /p:AssemblyVersion="$VERSION.0" \
+            /p:FileVersion="$VERSION.0"
 
-      # GodotPublish uses ContinueOnError="WarnAndContinue", so a failed .pck export would
-      # otherwise sail through as a green build with no assets in the zip.
-      - name: Verify build output
-        run: |
-          OUT="$RUNNER_TEMP/output/mods/$MOD_NAME"
-          for f in "$MOD_NAME.dll" "$MOD_NAME.pck" "$MOD_NAME.json"; do
-            [ -f "$OUT/$f" ] || { echo "::error::Missing build output $OUT/$f"; exit 1; }
-          done
-          ls -la "$OUT"
-
-      # Zip only the mod folder - BaseLib is a sibling in mods/ and is deliberately excluded.
-      # The .pdb sweep matters for the Steam upload too, which ships this folder as-is.
+      # Zip ONLY the Watcher folder (BaseLib is a sibling in mods/ and is deliberately excluded),
+      # without .pdb files — mirrors what release.ps1's staging did.
       - name: Package zip
         run: |
-          find "$RUNNER_TEMP/output/mods/$MOD_NAME" -name '*.pdb' -delete
-          rm -rf dist && mkdir -p "dist/$MOD_NAME"
-          cp "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.pck" \
-             "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.dll" \
-             "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.json" "dist/$MOD_NAME/"
-          
-          # Run zip inside dist so 'Watcher/' is the root folder in the archive
-          (cd dist && zip -r "$GITHUB_WORKSPACE/$ZIP" "$MOD_NAME")
-          
-          unzip -l "$ZIP"
+          test -d output/mods/Watcher || { echo "Built mod folder missing"; exit 1; }
+          find output/mods/Watcher -name '*.pdb' -delete
+          cd output/mods
+          zip -r "../../Watcher-$VERSION.zip" Watcher
+          cd ../..
+          unzip -l "Watcher-$VERSION.zip"
 
-      # Build the full body up front (banner + GitHub's auto notes) so the release is published
-      # complete in one shot, exactly like release.ps1 did.
-      - name: Build release body
-        id: notes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          AUTO=$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="v${{ env.VERSION }}" -q .body)
-          {
-            echo "Works with Slay the Spire 2 version $GAME_VERSION or newer."
-            echo "Works with BaseLib $BASELIB (not included - install it separately)."
-            echo
-            echo "---"
-            echo
-            echo "$AUTO"
-          } > body.md
-          {
-            echo 'body<<RELEASE_BODY_EOF'
-            cat body.md
-            echo RELEASE_BODY_EOF
-          } >> "$GITHUB_OUTPUT"
-
+      # Banner values come from the committed manifest instead of the local game install.
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "v${{ env.VERSION }}" "$ZIP" --title "$DISPLAY" --notes-file body.md
-
-      # NexusMods upload lives here rather than in a separate release-triggered workflow:
-      # a release created with GITHUB_TOKEN does not fire the `release: published` event,
-      # so nexus.yml would never run. See the notes at the bottom.
-      - name: Upload to NexusMods
-        if: github.event_name != 'workflow_dispatch' || inputs.nexus
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.7
-        with:
-          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
-          file_group_id: 7342526
-          filename: ${{ env.ZIP }}
-          version: ${{ env.VERSION }}
-          display_name: ${{ env.DISPLAY }}
-          description: ${{ steps.notes.outputs.body }}
-          file_category: main
-          archive_existing_file: true
-          allow_mod_manager_download: true
+        run: |
+          MIN_GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' Watcher.json | sed -E 's/.*"([^"]+)"$/\1/' || true)
+          BASELIB=$(grep -oE '<BaseLibVersion>[^<]+</BaseLibVersion>' build/mod.build.props | sed -E 's/<\/?BaseLibVersion>//g' || true)
+          {
+            echo "Works with Slay the Spire 2 version ${MIN_GAME:-unknown} or newer."
+            echo "Requires BaseLib ${BASELIB:-unknown} (not included — install it separately)."
+          } > banner.md
+          gh release create "v$VERSION" "Watcher-$VERSION.zip" \
+            --title "Watcher v$VERSION - StS2 v${MIN_GAME:-unknown}" \
+            --generate-notes \
+            --notes-file banner.md
 
       # ---- Steam Workshop upload (opt-in) ----
-      # Uploads the built mod folder as the item content - BaseLib is a sibling folder and
-      # stays out of it. The workshop item must already exist; its id goes in the
-      # STEAM_WORKSHOP_ID repo variable, so both steps no-op until you set it.
+      # Requires repo VARIABLE  STEAM_WORKSHOP_ID  (the id from mod_id.txt)
+      # and repo SECRETS:
+      #   STEAM_USERNAME       - builder account login name
+      #   STEAM_PASSWORD       - builder account password
+      #   STEAM_SHARED_SECRET  - that account's Steam Guard shared secret (for TOTP)
       - name: Generate Steam TOTP
         if: vars.STEAM_WORKSHOP_ID != '' && (github.event_name != 'workflow_dispatch' || inputs.steam)
         id: steam-totp
@@ -274,5 +219,23 @@ jobs:
           totp: ${{ steps.steam-totp.outputs.code }}
           appId: 2868840
           publishedFileId: ${{ vars.STEAM_WORKSHOP_ID }}
-          path: ${{ runner.temp }}/output/mods/Watcher
+          path: output/mods/Watcher
           changeNote: "Release v${{ env.VERSION }} - https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION }}"
+
+      - name: Upload to NexusMods
+        # Removed inputs.nexus since it wasn't defined in your workflow_dispatch inputs
+        if: github.event_name != 'workflow_dispatch'
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.7
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: 7342526
+          # Point directly to the zip file you created in the Package zip step
+          filename: Watcher-${{ env.VERSION }}.zip
+          version: ${{ env.VERSION }}
+          # Hardcode the display string since env.DISPLAY was removed
+          display_name: The Watcher v${{ env.VERSION }}
+          # Replaced missing steps.notes with a static description or you can read your banner.md here
+          description: "Release v${{ env.VERSION }}"
+          file_category: main
+          archive_existing_file: true
+          allow_mod_manager_download: true
