@@ -1,15 +1,16 @@
-[gd_scene load_steps=12 format=3 ]
+[gd_scene load_steps=12 format=3]
 
-[ext_resource type="Script" path="res://Code/Nodes/WatcherNEnergyCounter.cs" id="1_vejs6"]
+[ext_resource type="Script" uid="uid://dh4d0sqk21k6" path="res://src/Core/Nodes/Combat/NEnergyCounter.cs" id="1_vejs6"]
 [ext_resource type="PackedScene" path="res://Watcher/scenes/watcher/watcher_energy_vfx_back.tscn" id="2_b6j3t"]
-[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/layer1.png" id="3_5tjhr"]
+[ext_resource type="Texture2D" uid="uid://lgefmolhppyo" path="res://Watcher/images/ui/combat/energy_counters/layer1.png" id="3_5tjhr"]
 [ext_resource type="PackedScene" path="res://Watcher/scenes/watcher/watcher_energy_vfx_front.tscn" id="3_mubnd"]
-[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/layer2.png" id="4_5tjhr"]
-[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/layer3.png" id="5_gago6"]
-[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/layer4.png" id="6_pweko"]
-[ext_resource type="Texture2D" path="res://Watcher/images/ui/combat/energy_counters/layer5.png" id="7_7mya8"]
-[ext_resource type="FontFile" path="res://Watcher/fonts/kreon_bold.ttf" id="9_56gsp"]
-[ext_resource type="Script" path="res://Code/Nodes/WatcherMegaLabel.cs" id="9_61yas"]
+[ext_resource type="Texture2D" uid="uid://b3be8uwwtraqo" path="res://Watcher/images/ui/combat/energy_counters/layer2.png" id="4_5tjhr"]
+[ext_resource type="Texture2D" uid="uid://22qnhvfomuca" path="res://Watcher/images/ui/combat/energy_counters/layer3.png" id="5_gago6"]
+[ext_resource type="Texture2D" uid="uid://gpal4db8xwp6" path="res://Watcher/images/ui/combat/energy_counters/layer4.png" id="6_pweko"]
+[ext_resource type="Texture2D" uid="uid://dhv26y5gy288w" path="res://Watcher/images/ui/combat/energy_counters/layer5.png" id="7_7mya8"]
+[ext_resource type="FontFile" uid="uid://dc8ocd36hqnbe" path="res://fonts/kreon_bold.ttf" id="9_56gsp"]
+[ext_resource type="Script" uid="uid://dtfio45agppyj" path="res://addons/mega_text/MegaLabel.cs" id="9_61yas"]
+
 
 [sub_resource type="FontVariation" id="FontVariation_o1hxt"]
 base_font = ExtResource("9_56gsp")

@@ -8,6 +8,12 @@
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
         <RootNamespace>Watcher</RootNamespace>
         <PlatformTarget>AnyCPU</PlatformTarget>
+        <DefaultItemExcludes>
+            packages/**;
+            src/**;shaders/**;steam/**;System/**;themes/**;addons/**;
+            animations/**;banks/**;debug_audio/**;fonts/**;images/**;
+            localization/**;materials/**;models/**;RiderTestRunner/**;scenes/**
+        </DefaultItemExcludes>
     </PropertyGroup>
     <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')"/>
     <PropertyGroup>
@@ -148,7 +154,6 @@
         <None Include=".gitignore"/>
         <None Include="Watcher.json"/>
         <None Include="project.godot"/>
-        <Content Include="Code\Compatibility\CompatibilityCreatureCmd.cs.uid" />
         <Content Include="local.props"/>
         <Content Include="local.props.example"/>
         <None Include="Watcher/**"/>
@@ -187,12 +192,19 @@
         <Copy SourceFiles="@(BaseLibFiles)" DestinationFolder="$(ModsPath)BaseLib/"/>
     </Target>
 
-    <Target Name="GodotPublish" AfterTargets="Publish" Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
-        <Message Text="Exporting Godot .pck to mods folder" Importance="high"/>
+    <Target Name="GodotImport" BeforeTargets="GodotPublish"
+            Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(SkipGodotImport)' != 'true'">
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; --import --quit --extra-args --no-window"
+              EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1;Configuration=$(Configuration)"
+              IgnoreExitCode="true"
+              IgnoreStandardErrorWarningFormat="true"/>
+    </Target>
 
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --export-pack &quot;BasicExport&quot; &quot;$(ModsPath)$(MSBuildProjectName)/$(MSBuildProjectName).pck&quot;"
+    <Target Name="GodotPublish" AfterTargets="Publish"
+            Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; -s build/pack_mod.gd -- &quot;$(ModsPath)$(MSBuildProjectName)/$(MSBuildProjectName).pck&quot; Watcher Code"
               EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
-              ContinueOnError="WarnAndContinue"/>
+              IgnoreExitCode="false"/>
     </Target>
 
     <Target Name="GodotPublishSkipped" AfterTargets="Publish" Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')">

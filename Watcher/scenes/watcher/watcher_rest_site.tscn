@@ -1,8 +1,8 @@
-[gd_scene load_steps=4 format=3 ]
+[gd_scene load_steps=4 format=3 uid="uid://hb16i2q8aa1r"]
 
-[ext_resource type="Script" path="res://Code/Nodes/WatcherNRestSiteCharacter.cs" id="1_awmq8"]
-[ext_resource type="Texture2D" path="res://Watcher/images/watcher/sitting.png" id="2_ynh71"]
-[ext_resource type="PackedScene" path="res://Watcher/scenes/watcher/selection_reticle.tscn" id="3_evojs"]
+[ext_resource type="Script" uid="uid://co1bjhn8xucpa" path="res://WatcherCode/Nodes/WatcherNRestSiteCharacter.cs" id="1_awmq8"]
+[ext_resource type="Texture2D" uid="uid://df1vny244ee1k" path="res://Watcher/images/watcher/sitting.png" id="2_ynh71"]
+[ext_resource type="PackedScene" uid="uid://bgy88bk44xxvk" path="res://scenes/ui/selection_reticle.tscn" id="3_ynh71"]
 
 [node name="RegentRestSite" type="Node2D"]
 scale = Vector2(0.760006, 0.760006)
@@ -24,13 +24,13 @@ offset_top = 24.999802
 offset_right = 17.105127
 offset_bottom = 24.999802
 
-[node name="SelectionReticle" parent="ControlRoot" instance=ExtResource("3_evojs")]
+[node name="SelectionReticle" parent="ControlRoot" instance=ExtResource("3_ynh71")]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = -181.5775
-offset_top = -335.52365
-offset_right = 146.05147
-offset_bottom = 30.262909
+offset_left = -177.63017
+offset_top = -332.8921
+offset_right = 123.68324
+offset_bottom = 13.157776
 
 [node name="Hitbox" type="Control" parent="ControlRoot"]
 unique_name_in_owner = true

@@ -6,7 +6,7 @@
 *.kra~
 *.png~
 
-!Watcher/images/watcher/Watcher.png.import
+!Watcher/animation/the_watcher.png.import
 
 bin/
 !bin/windows/libspine_godot.windows.editor.x86_64.dll
@@ -40,5 +40,6 @@ local.props
 /shaders
 /themes
 /addons
+/src
 /.run
 /dist/
