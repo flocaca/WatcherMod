@@ -153,21 +153,21 @@ jobs:
       # Banner + release naming come from the committed manifest/csproj instead of the local
       # game install and the Steam appmanifest (neither exists in CI).
       - name: Resolve release metadata
-          run: |
-            GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' "$MOD_NAME.json" | sed -E 's/.*"([^"]+)"$/\1/')
-            BASELIB=$(grep -oE '<BaseLibVersion>[^<]+</BaseLibVersion>' "$MOD_NAME.csproj" | sed -E 's/<\/?BaseLibVersion>//g')
-            
-            # Use ${{ env.VERSION }} to guarantee it is pulled from GITHUB_ENV
-            DISPLAY="$DISPLAY_BASE - ${{ env.VERSION }} - StS2 - v$GAME"
-            
-            # GitHub dots out spaces in asset names, so the zip name stays space-free.
-            SAFE=$(echo "$DISPLAY" | sed 's/ - /-/g; s/ /_/g')
-            {
-              echo "GAME_VERSION=$GAME"
-              echo "BASELIB=$BASELIB"
-              echo "DISPLAY=$DISPLAY"
-              echo "ZIP=$SAFE.zip"
-            } >> "$GITHUB_ENV"
+        run: |
+          GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' "$MOD_NAME.json" | sed -E 's/.*"([^"]+)"$/\1/')
+          BASELIB=$(grep -oE '<BaseLibVersion>[^<]+</BaseLibVersion>' "$MOD_NAME.csproj" | sed -E 's/<\/?BaseLibVersion>//g')
+          
+          # Use ${{ env.VERSION }} to guarantee it is pulled from GITHUB_ENV
+          DISPLAY="$DISPLAY_BASE - ${{ env.VERSION }} - StS2 - v$GAME"
+          
+          # GitHub dots out spaces in asset names, so the zip name stays space-free.
+          SAFE=$(echo "$DISPLAY" | sed 's/ - /-/g; s/ /_/g')
+          {
+            echo "GAME_VERSION=$GAME"
+            echo "BASELIB=$BASELIB"
+            echo "DISPLAY=$DISPLAY"
+            echo "ZIP=$SAFE.zip"
+          } >> "$GITHUB_ENV"
 
       # First cold import often exits non-zero while bootstrapping .godot/ - run it twice.
       - name: Import Godot resources
