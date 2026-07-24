@@ -150,18 +150,20 @@ jobs:
           sed -i -E 's/("version"[[:space:]]*:[[:space:]]*")[0-9]+\.[0-9]+\.[0-9]+(")/\1'"${{ env.VERSION }}"'\2/' "$MOD_NAME.json"
           grep '"version"' "$MOD_NAME.json"
 
-      # Banner + release naming come from the committed manifest/csproj instead of the local
+      # Banner + release naming come from the committed manifest/props instead of the local
       # game install and the Steam appmanifest (neither exists in CI).
       - name: Resolve release metadata
         run: |
           GAME=$(grep -oE '"min_game_version"[[:space:]]*:[[:space:]]*"[^"]+"' "$MOD_NAME.json" | sed -E 's/.*"([^"]+)"$/\1/')
-          BASELIB=$(grep -oE '<BaseLibVersion>[^<]+</BaseLibVersion>' "$MOD_NAME.csproj" | sed -E 's/<\/?BaseLibVersion>//g')
+          BASELIB=$(grep -oE '<BaseLibVersion>[^<]+' build/mod.build.props | sed 's/<BaseLibVersion>//' | tr -d '\r\n')
+          
           DISPLAY="$DISPLAY_BASE - ${{ env.VERSION }} - StS2 - v$GAME"
           # GitHub dots out spaces in asset names, so the zip name stays space-free.
           SAFE=$(echo "$DISPLAY" | sed 's/ - /-/g; s/ /_/g')
+          
           {
             echo "GAME_VERSION=$GAME"
-            echo "BASELIB=$BASELIB"
+            echo "BASELIB=${BASELIB:-unknown}"
             echo "DISPLAY=$DISPLAY"
             echo "ZIP=$SAFE.zip"
           } >> "$GITHUB_ENV"
@@ -202,10 +204,10 @@ jobs:
           cp "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.pck" \
              "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.dll" \
              "$RUNNER_TEMP/output/mods/$MOD_NAME/$MOD_NAME.json" "dist/$MOD_NAME/"
-        
-          # Create zip archive from inside dist so 'Watcher/' is the root folder in the zip
+          
+          # Run zip inside dist so 'Watcher/' is the root folder in the archive
           (cd dist && zip -r "$GITHUB_WORKSPACE/$ZIP" "$MOD_NAME")
-        
+          
           unzip -l "$ZIP"
 
       # Build the full body up front (banner + GitHub's auto notes) so the release is published
