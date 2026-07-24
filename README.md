@@ -131,10 +131,15 @@ Animations are not included because Slay the Spire 2 uses Spine, and I currently
 
 ### Credits
 
-chaendizzle - Calm, Divinity and Wrath SFX / VFX
-
-Snumodder - Korean localization. 
-
-NoFires,ImLingCheng(vvan) - Chinese localization and translation refinement.
-
-Cany0udance - for helping me to port the animations. 
+- lamali - Hi, that's me - most of the programming
+- chaendizzle - Calm, Divinity and Wrath SFX / VFX
+- lammiesdotyum - Shared Wisdom, Fleeting Clarity and Accelerate Card Art
+- Snumodder - Korean localization
+- ImLingCheng - Chinese localization
+- NoFires - Chinese localization
+- Nitablade - Russian localization
+- Continuous - Russian localization
+- iwasreturnsolomon-svg - Japanese localization
+- Valnar38 - Italian localization
+- Cany0udance - Animation and Character Assets porting help
+- Pet-Slime - Energy counter VFX
