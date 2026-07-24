@@ -1,203 +1,50 @@
 ﻿<Project Sdk="Godot.NET.Sdk/4.5.1">
+    <Import Project="build/mod.build.props"/>
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>true</ImplicitUsings>
-        <Nullable>enable</Nullable> <!--Makes code analysis regarding null values stricter.-->
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
-        <RootNamespace>Watcher</RootNamespace>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <DefaultItemExcludes>
-            packages/**;
-            src/**;shaders/**;steam/**;System/**;themes/**;addons/**;
-            animations/**;banks/**;debug_audio/**;fonts/**;images/**;
-            localization/**;materials/**;models/**;RiderTestRunner/**;scenes/**
-        </DefaultItemExcludes>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+        <AssemblyName>Watcher</AssemblyName>
+        <IsPublishAll>true</IsPublishAll>
+        <!--NoWarn>$(NoWarn);STS002</NoWarn-->
     </PropertyGroup>
-    <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')"/>
-    <PropertyGroup>
-        <AssemblyVersion>1.5.5.0</AssemblyVersion>
-        <FileVersion>1.5.5.0</FileVersion>
-        <Version>1.5.5</Version>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <BaseLibVersion>3.3.8</BaseLibVersion>
-        <UseCustomBaseLib>false</UseCustomBaseLib>
-        <CustomBaseLibRepo>C:\Users\lamal\Desktop\Programmieren\sts2mods\BaseLib-StS2</CustomBaseLibRepo>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <AssetFolder>Watcher</AssetFolder>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-        <Optimize>false</Optimize>
-        <DebugType>portable</DebugType>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <Optimize>true</Optimize>
-        <DebugType>none</DebugType>
-        <PathMap>$(AppOutputBase)=.\</PathMap>
-    </PropertyGroup>
-
-    <!-- OS Detection -->
-    <PropertyGroup>
-        <IsWindows>false</IsWindows>
-        <IsLinux>false</IsLinux>
-        <IsOSX>false</IsOSX>
-        <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
-        <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
-        <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
-    </PropertyGroup>
-
-    <!-- // NOTE: Megadot is version 4.5.1, and the game won't load your .pck if the Godot version used is newer. -->
-
-    <!-- Windows -->
-    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
-        <GodotPath Condition="'$(GodotPath)' == ''">C:\Users\lamal\Desktop\Programmieren\sts2mods\MegaDot\MegaDot_v4.5.1-stable_mono_win64.exe</GodotPath>
-        <!-- If on Windows and Slay the Spire 2 is not installed in your default steam library, adjust the following.-->
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">D:/SteamLibrary/steamapps</SteamLibraryPath>
-        <!-- The below should not need to be changed. -->
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Path)/mods/</ModsPath>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_windows_x86_64</Sts2DataDir>
-    </PropertyGroup>
-
-    <!-- Linux -->
-    <PropertyGroup Condition="'$(IsLinux)' == 'true'">
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/.local/share/Steam/steamapps</SteamLibraryPath>
-        <!-- Change the path here if using a downloaded binary instead of the Steam version-->
-        <GodotPath Condition="'$(GodotPath)' == ''">$(SteamLibraryPath)/common/Godot Engine/godot.x11.opt.tools.64</GodotPath>
-
-        <!-- The below should not need to be changed. -->
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Path)/mods/</ModsPath>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
-    </PropertyGroup>
-
-    <!-- macOS -->
-    <PropertyGroup Condition="'$(IsOSX)' == 'true'">
-        <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
-        <GodotPath Condition="'$(GodotPath)' == ''">$(HOME)/Applications/Godot_mono.app/Contents/MacOS/Godot</GodotPath>
-
-        <!-- The below should not need to be changed. -->
-        <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
-        <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Path)/SlayTheSpire2.app/Contents/MacOS/mods/</ModsPath>
-        <Sts2DataDir Condition="Exists('$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64')">$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</Sts2DataDir>
-        <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <!-- MSB3270: mods are built as MSIL while the local StS2 install is platform-specific.
-             CS0436: Krafs' generated IgnoresAccessChecksToAttribute vs the copy inside 0Harmony;
-             the compiler picks the local one, which is what we want. -->
-        <NoWarn>$(NoWarn);MSB3270;CS0436</NoWarn>
-    </PropertyGroup>
-
-
-    <!-- Game assemblies: real DLLs when StS2 is installed locally... -->
-    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
-        <Reference Include="0Harmony">
-            <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="sts2">
-            <HintPath>$(Sts2DataDir)/sts2.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="SmartFormat">
-            <HintPath>$(Sts2DataDir)/SmartFormat.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
-
-    <!-- ...reference assemblies from NuGet when it isn't (CI). -->
-    <ItemGroup Condition="!Exists('$(Sts2DataDir)')">
-        <PackageReference Include="Book.StS2.RefLib" Version="*-*" PrivateAssets="all"/>
-        <PackageReference Include="SmartFormat.NET" Version="3.*" ExcludeAssets="runtime" PrivateAssets="all"/>
-    </ItemGroup>
 
     <ItemGroup>
-        <!-- NuGet BaseLib -->
-        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="$(BaseLibVersion)" PrivateAssets="All"
-                          Condition="'$(UseCustomBaseLib)' != 'true'"/>
+        <!-- Localization/asset files for every submod, so the pck picker below can find them -->
+        <AdditionalFiles Include="Watcher/localization/**/*.json"/>
 
-        <!-- Local BaseLib build -->
-        <Reference Include="BaseLib" Condition="'$(UseCustomBaseLib)' == 'true'">
-            <HintPath>$(CustomBaseLibRepo)\publish\BaseLib.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <PackageReference Include="Krafs.Publicizer" Version="2.3.0" PrivateAssets="All"/>
-        <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="0.1.9"/>
-        <AdditionalFiles Include="$(AssetFolder)/localization/**/*.json"/>
-    </ItemGroup>
-    
-    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
-        <Publicize Include="sts2" IncludeVirtualMembers="false" IncludeCompilerGeneratedMembers="false"/>
-    </ItemGroup>
 
-    
-    <Target Name="RemoveDuplicateKrafsAttribute" BeforeTargets="CoreCompile"
-            Condition="!Exists('$(Sts2DataDir)')">
-        <ItemGroup>
-            <Compile Remove="$(NuGetPackageRoot)krafs.publicizer/**/IgnoresAccessChecksToAttribute.cs"/>
-        </ItemGroup>
-    </Target>
-
-    <!-- Assets are not code. WatcherCode/ is picked up by the SDK's default glob. -->
-    <ItemGroup>
-        <Compile Remove="$(AssetFolder)/**"/>
-        <Compile Remove="shaders/**"/>
-        <EmbeddedResource Remove="$(AssetFolder)/**"/>
-        <EmbeddedResource Remove="shaders/**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include=".gitignore"/>
+        <EmbeddedResource Remove="Watcher/**;"/>
+        <None Include="Watcher/**"/>
+        <Compile Remove="Watcher/**"/>
+        <None Include="WatcherCode/**"/>
         <None Include="Watcher.json"/>
-        <None Include="project.godot"/>
-        <None Include="cardloc-presets.json"/>
-        <None Include="$(AssetFolder)/**"/>
-        <None Include="build/**"/>
-        <Content Include="local.props"/>
-        <Content Include="local.props.example"/>
-        <Content Include=".editorconfig"/>
+        <None Include="local.props"/>
+        <None Include="local.props.example"/>
+        <None Include=".gitignore"/>
+        <Compile Include="WatcherCode/**/*.cs"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include=".godot\" />
-    </ItemGroup>
-
+    <PropertyGroup>
+        <ModOutputFolder>Watcher</ModOutputFolder>
+        <PackFolders>Watcher</PackFolders>
+    </PropertyGroup>
 
     <Target Name="CopyToModsFolderOnBuild" AfterTargets="PostBuildEvent">
-        <Message Text="Copying .dll and manifest to mods folder." Importance="high"/>
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)/"/>
-        <Copy SourceFiles="Watcher.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)/"/>
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(ModOutputFolder)/"/>
+        <Copy SourceFiles="Watcher.json" DestinationFolder="$(ModsPath)$(ModOutputFolder)/"/>
         <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"
-              DestinationFolder="$(ModsPath)$(MSBuildProjectName)/"
+              DestinationFolder="$(ModsPath)$(ModOutputFolder)/"
               Condition="Exists('$(TargetDir)$(TargetName).pdb')"/>
 
-        <Message Text="Copying BaseLib to mods folder." Importance="high"/>
-        <!-- BaseLib from NuGet -->
-        <ItemGroup Condition="'$(UseCustomBaseLib)' != 'true'">
-            <BaseLibFiles Include="$(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/lib/**/BaseLib.dll;
-                   $(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/**/Content/BaseLib.pck;
-                   $(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/**/Content/BaseLib.json"/>
+        <Message Text="Copying BaseLib dependencies..." Importance="high"/>
+        <ItemGroup Condition="'$(UseLocalBaseLib)' != 'true'">
+            <BaseLibFiles Include="$(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/lib/**/BaseLib.dll;$(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/Content/BaseLib.pck;$(NuGetPackageRoot)alchyr.sts2.baselib/$(BaseLibVersion)/Content/BaseLib.json;"/>
         </ItemGroup>
-
-        <!-- BaseLib from local build -->
-        <ItemGroup Condition="'$(UseCustomBaseLib)' == 'true'">
-            <BaseLibFiles Include="$(CustomBaseLibRepo)\publish\BaseLib.dll;
-                   $(CustomBaseLibRepo)\build\BaseLib.pck;
-                   $(CustomBaseLibRepo)\BaseLib.json"/>
-        </ItemGroup>
-
-        <Message Text="BaseLib source: $([MSBuild]::ValueOrDefault('$(UseCustomBaseLib)', 'false')) (custom) — files: @(BaseLibFiles)" Importance="high"/>
         <Copy SourceFiles="@(BaseLibFiles)" DestinationFolder="$(ModsPath)BaseLib/"/>
     </Target>
-    
+
     <Target Name="GodotImport" BeforeTargets="GodotPublish"
             Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(SkipGodotImport)' != 'true'">
         <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; --import --quit --extra-args --no-window"
@@ -205,18 +52,18 @@
               IgnoreExitCode="true"
               IgnoreStandardErrorWarningFormat="true"/>
     </Target>
-    
+
     <Target Name="GodotPublish" AfterTargets="Publish"
             Condition="'$(GodotPath)' != '' and Exists('$(GodotPath)') and '$(IsInnerGodotExport)' != 'true'">
-        <Error Condition="!Exists('$(MSBuildProjectDirectory)/$(AssetFolder)')"
-               Text="Asset folder '$(AssetFolder)' not found - the .pck would be empty."/>
-        <Message Text="--- PACKING: $(AssetFolder) ---" Importance="high"/>
-        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; -s build/pack_mod.gd -- &quot;$(ModsPath)$(MSBuildProjectName)/$(MSBuildProjectName).pck&quot; $(AssetFolder)"
-              EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
-              IgnoreExitCode="false"/>
+        <Message Text="--- PACKING COMBINED RELEASE: '$(PackFolders)' ---" Importance="high"/>
+        <Exec Command="&quot;$(GodotPath)&quot; --headless --audio-driver Dummy --path &quot;$(MSBuildProjectDirectory)&quot; -s build/pack_mod.gd -- &quot;$(ModsPath)$(ModOutputFolder)/Watcher.pck&quot; $(PackFolders.Replace(';', ' '))"
+              EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1;Configuration=$(Configuration)"
+              IgnoreExitCode="false"
+              IgnoreStandardErrorWarningFormat="true"/>
     </Target>
 
-    <Target Name="GodotPublishSkipped" AfterTargets="Publish" Condition="'$(GodotPath)' == '' or !Exists('$(GodotPath)')">
-        <Message Text="Skipping Godot .pck export because GodotPath is not configured." Importance="high"/>
-    </Target>
+
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);V107</DefineConstants>
+    </PropertyGroup>
 </Project>
