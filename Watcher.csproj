@@ -6,7 +6,6 @@
         <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
         <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
         <AssemblyName>Watcher</AssemblyName>
-        <IsPublishAll>true</IsPublishAll>
         <!--NoWarn>$(NoWarn);STS002</NoWarn-->
     </PropertyGroup>
 

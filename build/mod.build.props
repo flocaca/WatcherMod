@@ -1,5 +1,5 @@
 ﻿<Project>
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true'">
+    <PropertyGroup>
         <ImplicitUsings>true</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -50,12 +50,12 @@
         </Task>
     </UsingTask>
 
-    <ItemGroup Condition="'$(IsPublishAll)' != 'true'">
+    <ItemGroup>
         <SymlinkFolders Include="src;images;fonts;localization;materials;models;scenes;animations;banks;debug_audio;shaders;themes;addons"/>
     </ItemGroup>
 
     <Target Name="CreateAssetSymlinks" BeforeTargets="Build"
-            Condition="'$(IsPublishAll)' != 'true' and '$(AssetSourcePath)' != '' and Exists('$(AssetSourcePath)')">
+            Condition="'$(AssetSourcePath)' != '' and Exists('$(AssetSourcePath)')">
         <CreateSymlink
                 LinkPath="$(MSBuildProjectDirectory)\%(SymlinkFolders.Identity)"
                 TargetPath="$(AssetSourcePath)\%(SymlinkFolders.Identity)"/>
@@ -63,12 +63,12 @@
 
 
 
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true' and '$(Configuration)' == 'Debug'">
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <Optimize>false</Optimize>
         <DebugType>portable</DebugType>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true' and '$(Configuration)' == 'Release'">
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <Optimize>true</Optimize>
         <DebugType>none</DebugType>
         <PathMap>$(AppOutputBase)=.\</PathMap>
@@ -76,20 +76,20 @@
 
     <Import Project="$(MSBuildThisFileDirectory)..\local.props" Condition="Exists('$(MSBuildThisFileDirectory)..\local.props')"/>
     <!-- OS Detection -->
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true'">
+    <PropertyGroup>
         <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows'))">true</IsWindows>
         <IsLinux Condition="$([MSBuild]::IsOSPlatform('Linux'))">true</IsLinux>
         <IsOSX Condition="$([MSBuild]::IsOSPlatform('OSX'))">true</IsOSX>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true' and '$(IsWindows)' == 'true'">
+    <PropertyGroup Condition="'$(IsWindows)' == 'true'">
         <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">C:/Program Files (x86)/Steam/steamapps</SteamLibraryPath>
         <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
         <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Path)/mods/</ModsPath>
         <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_windows_x86_64</Sts2DataDir>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true' and '$(IsLinux)' == 'true'">
+    <PropertyGroup Condition="'$'$(IsLinux)' == 'true'">
         <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/.local/share/Steam/steamapps</SteamLibraryPath>
         <GodotPath Condition="'$(GodotPath)' == ''">$(SteamLibraryPath)/common/Godot Engine/godot.x11.opt.tools.64</GodotPath>
         <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
@@ -97,7 +97,7 @@
         <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Path)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(IsPublishAll)' != 'true' and '$(IsOSX)' == 'true'">
+    <PropertyGroup Condition="'$(IsOSX)' == 'true'">
         <SteamLibraryPath Condition="'$(SteamLibraryPath)' == ''">$(HOME)/Library/Application Support/Steam/steamapps</SteamLibraryPath>
         <GodotPath Condition="'$(GodotPath)' == ''">$(HOME)/Applications/Godot_mono.app/Contents/MacOS/Godot</GodotPath>
         <Sts2Path Condition="'$(Sts2Path)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Path>
