@@ -15,7 +15,7 @@ concurrency:
 env:
   MEGADOT_VERSION: 4.5.1-m.11
   SPINE_VERSION: 4.2-4.5.1-stable
-  GODOT_CACHE_ID: 1
+  GODOT_CACHE_ID: 0
 jobs:
   publish:
     runs-on: ubuntu-latest
