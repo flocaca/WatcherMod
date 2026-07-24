@@ -86,8 +86,8 @@
         <NoWarn>$(NoWarn);MSB3270</NoWarn>
     </PropertyGroup>
 
-    
-    <ItemGroup>
+
+    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
         <Reference Include="0Harmony">
             <HintPath>$(Sts2DataDir)/0Harmony.dll</HintPath>
             <Private>false</Private>
@@ -100,7 +100,14 @@
             <HintPath>$(Sts2DataDir)/SmartFormat.dll</HintPath>
             <Private>false</Private>
         </Reference>
+    </ItemGroup>
 
+    <ItemGroup Condition="!Exists('$(Sts2DataDir)')">
+        <PackageReference Include="Book.StS2.RefLib" Version="*-*" PrivateAssets="all"/>
+        <PackageReference Include="SmartFormat.NET" Version="3.*" ExcludeAssets="runtime" PrivateAssets="all"/>
+    </ItemGroup>
+    
+    <ItemGroup>
         <!-- NuGet BaseLib -->
         <PackageReference Include="Alchyr.Sts2.BaseLib" Version="$(BaseLibVersion)" PrivateAssets="All"
                           Condition="'$(UseCustomBaseLib)' != 'true'"/>
@@ -114,7 +121,7 @@
         <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="0.1.9"/>
         <AdditionalFiles Include="Watcher/localization/**/*.json"/>
     </ItemGroup>
-    <ItemGroup> <!--Allows access to originally private/protected members but may (unlikely to) cause errors.-->
+    <ItemGroup Condition="Exists('$(Sts2DataDir)')">
         <Publicize Include="sts2" IncludeVirtualMembers="false" IncludeCompilerGeneratedMembers="false"/>
     </ItemGroup>
 
