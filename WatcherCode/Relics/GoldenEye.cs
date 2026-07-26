@@ -24,7 +24,7 @@ public sealed class GoldenEye : WatcherRelicModel, IModifyScryAmount
 
     public int ModifyScryAmount(Player player, int amount)
     {
-        return player == Owner ? amount + DynamicVars.Scry().IntValue : amount;
+        return player == Owner ? amount + DynamicVars.Cards.IntValue : amount;
     }
 
     public Task AfterModifyingScryAmount(PlayerChoiceContext ctx, Player player, int originalAmount, int modifiedAmount)
