@@ -1,34 +1,41 @@
 using Godot;
-using MegaCrit.Sts2.Core.Assets;
 
 namespace Watcher.Code.Stances.Vfx;
 
 [GlobalClass]
 public partial class WrathActivationBurst : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/strike_line.png";
     private const int LineCount = 10;
     private const float TotalDuration = 1.1f;
     private const float CircleRadius = 44f;
     private float _elapsed;
 
     private BurstLine[] _lines = null!;
+    private Texture2D _texture = null!;
 
     public override void _Ready()
     {
         var s = StanceVfx.VfxScale;
         Position *= s;
 
+        // Nothing to show if the cache can't give us the line texture.
+        if (!StanceVfx.TryGetTexture(TexturePath, ref _texture))
+        {
+            QueueFree();
+            return;
+        }
+
         var rng = new RandomNumberGenerator();
         rng.Randomize();
 
         _lines = new BurstLine[LineCount];
         var mat = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
-        var texture = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/strike_line.png");
 
         for (var i = 0; i < LineCount; i++)
         {
             var sprite = new Sprite2D();
-            sprite.Texture = texture;
+            sprite.Texture = _texture;
             sprite.Material = mat;
 
             var g = rng.RandfRange(0.15f, 0.35f);
@@ -69,6 +76,10 @@ public partial class WrathActivationBurst : Node2D
         for (var i = 0; i < _lines.Length; i++)
         {
             ref readonly var line = ref _lines[i];
+
+            if (!GodotObject.IsInstanceValid(line.Sprite))
+                continue;
+
             var t = _elapsed - line.Delay;
 
             if (t < 0)

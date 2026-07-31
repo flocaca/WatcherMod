@@ -1,15 +1,18 @@
 using Godot;
-using MegaCrit.Sts2.Core.Assets;
 
 namespace Watcher.Code.Stances.Vfx;
 
 [GlobalClass]
 public partial class DivinityEyeSpawner : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/eye_anim.png";
+    private const int FrameCount = 7;
+    private const int FrameSize = 64;
     private const float SpawnInterval = 0.2f;
 
     private readonly List<EyeData> _eyes = [];
     private AtlasTexture[] _frames = null!;
+    private Texture2D _atlasSource = null!;
     private CanvasItemMaterial _mat = null!;
     private RandomNumberGenerator _rng = null!;
     private float _s;
@@ -30,13 +33,10 @@ public partial class DivinityEyeSpawner : Node2D
         _rng.Randomize();
         _mat = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
 
-        var strip = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/eye_anim.png");
-        _frames = new AtlasTexture[7];
-        for (var i = 0; i < 7; i++)
+        if (!EnsureFrames())
         {
-            _frames[i] = new AtlasTexture();
-            _frames[i].Atlas = strip;
-            _frames[i].Region = new Rect2(i * 64, 0, 64, 64);
+            QueueFree();
+            return;
         }
 
         for (var i = 0; i < 3; i++)
@@ -44,6 +44,34 @@ public partial class DivinityEyeSpawner : Node2D
             var preAge = _rng.RandfRange(0f, 2.0f);
             SpawnEye(preAge);
         }
+    }
+
+    /// <summary>
+    ///     Ensures the atlas source texture is valid and the frame slices are built
+    ///     against it. The preload cache can dispose the atlas source ("Unloading N
+    ///     missed cache assets"), which invalidates every AtlasTexture that references
+    ///     it, so re-fetch and rebuild when that happens. Returns false if the source
+    ///     can't be resolved.
+    /// </summary>
+    private bool EnsureFrames()
+    {
+        if (_frames != null && GodotObject.IsInstanceValid(_atlasSource))
+            return true;
+
+        if (!StanceVfx.TryGetTexture(TexturePath, ref _atlasSource))
+            return false;
+
+        _frames = new AtlasTexture[FrameCount];
+        for (var i = 0; i < FrameCount; i++)
+        {
+            _frames[i] = new AtlasTexture
+            {
+                Atlas = _atlasSource,
+                Region = new Rect2(i * FrameSize, 0, FrameSize, FrameSize)
+            };
+        }
+
+        return true;
     }
 
     public override void _Process(double delta)
@@ -65,6 +93,13 @@ public partial class DivinityEyeSpawner : Node2D
             return;
         }
 
+        // If the atlas got evicted, rebuild the frames before any sprite reads them.
+        if (!EnsureFrames())
+        {
+            StopSpawning();
+            return;
+        }
+
         for (var i = _eyes.Count - 1; i >= 0; i--)
         {
             var e = _eyes[i];
@@ -72,7 +107,8 @@ public partial class DivinityEyeSpawner : Node2D
 
             if (e.Age >= e.Lifetime)
             {
-                e.Sprite.QueueFree();
+                if (GodotObject.IsInstanceValid(e.Sprite))
+                    e.Sprite.QueueFree();
                 _eyes.RemoveAt(i);
                 continue;
             }
@@ -134,6 +170,12 @@ public partial class DivinityEyeSpawner : Node2D
 
     private void SpawnEye(float initialAge)
     {
+        if (!EnsureFrames())
+        {
+            StopSpawning();
+            return;
+        }
+
         var sprite = new Sprite2D();
         sprite.Texture = _frames[0];
         sprite.Material = _mat;

@@ -1,11 +1,11 @@
 using Godot;
-using MegaCrit.Sts2.Core.Assets;
 
 namespace Watcher.Code.Stances.Vfx;
 
 [GlobalClass]
 public partial class CalmFrostStreakSpawner : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/frost_streak.png";
     private const float SpawnInterval = 0.04f;
     private const float MinLifetime = 1.1f;
     private const float MaxLifetime = 1.7f;
@@ -26,7 +26,7 @@ public partial class CalmFrostStreakSpawner : Node2D
         _rng = new RandomNumberGenerator();
         _rng.Randomize();
         _mat = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
-        _texture = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/frost_streak.png");
+        StanceVfx.TryGetTexture(TexturePath, ref _texture);
 
         for (var i = 0; i < 15; i++)
         {
@@ -66,7 +66,8 @@ public partial class CalmFrostStreakSpawner : Node2D
 
             if (s.Age >= s.Lifetime)
             {
-                s.Sprite.QueueFree();
+                if (IsInstanceValid(s.Sprite))
+                    s.Sprite.QueueFree();
                 _streaks.RemoveAt(i);
                 continue;
             }
@@ -107,6 +108,12 @@ public partial class CalmFrostStreakSpawner : Node2D
 
     private void SpawnStreak(float initialAge)
     {
+        if (!StanceVfx.TryGetTexture(TexturePath, ref _texture))
+        {
+            StopSpawning();
+            return;
+        }
+
         var sprite = new Sprite2D();
         sprite.Texture = _texture;
         sprite.Material = _mat;

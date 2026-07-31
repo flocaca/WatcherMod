@@ -5,6 +5,7 @@ namespace Watcher.Code.Stances.Vfx;
 [GlobalClass]
 public partial class DivinityActivationBurst : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/glow_spark.png";
     private const int SparkCount = 20;
     private const float TotalDuration = 1.2f;
     private float _elapsed;
@@ -15,13 +16,19 @@ public partial class DivinityActivationBurst : Node2D
     {
         const float s = StanceVfx.VfxScale;
         Position *= s;
+        
+        var tex = GD.Load<Texture2D>(TexturePath);
+        if (!IsInstanceValid(tex))
+        {
+            QueueFree();
+            return;
+        }
 
         var rng = new RandomNumberGenerator();
         rng.Randomize();
 
         _sparks = new SparkInfo[SparkCount];
         var mat = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
-        var tex = GD.Load<Texture2D>("res://Watcher/images/vfx/glow_spark.png");
 
         for (var i = 0; i < SparkCount; i++)
         {
@@ -73,6 +80,10 @@ public partial class DivinityActivationBurst : Node2D
         foreach (var t1 in _sparks)
         {
             ref readonly var sp = ref t1;
+
+            if (!GodotObject.IsInstanceValid(sp.Sprite))
+                continue;
+
             var t = _elapsed - sp.Delay;
 
             if (t < 0)

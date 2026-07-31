@@ -6,6 +6,7 @@ namespace Watcher.Code.Stances.Vfx;
 [GlobalClass]
 public partial class WrathGlowSparkSpawner : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/glow_spark.png";
     private const float SpawnInterval = 0.05f;
     private const float SparkLifetime = 1.4f;
     private const float SpawnRadius = 205f;
@@ -34,7 +35,7 @@ public partial class WrathGlowSparkSpawner : Node2D
         _rng = new RandomNumberGenerator();
         _rng.Randomize();
         _mat = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
-        _texture = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/glow_spark.png");
+        _texture = ResolveTexture();
 
         for (var i = 0; i < 20; i++)
         {
@@ -69,7 +70,8 @@ public partial class WrathGlowSparkSpawner : Node2D
 
             if (s.Age >= s.Lifetime)
             {
-                s.Sprite.QueueFree();
+                if (GodotObject.IsInstanceValid(s.Sprite))
+                    s.Sprite.QueueFree();
                 _sparks.RemoveAt(i);
                 continue;
             }
@@ -92,8 +94,25 @@ public partial class WrathGlowSparkSpawner : Node2D
         }
     }
 
+    private Texture2D ResolveTexture()
+    {
+        return PreloadManager.Cache.GetAsset<Texture2D>(TexturePath);
+    }
+
     private void SpawnSpark(float initialAge)
     {
+        // The preload cache can evict/dispose this texture while the spawner is
+        // still alive ("Unloading N missed cache assets"). Re-fetch if the cached
+        // handle was freed, and bail out if it can't be recovered rather than
+        // assigning a disposed object to the sprite.
+        if (!GodotObject.IsInstanceValid(_texture))
+            _texture = ResolveTexture();
+        if (!GodotObject.IsInstanceValid(_texture))
+        {
+            StopSpawning();
+            return;
+        }
+
         var sprite = new Sprite2D();
         sprite.Texture = _texture;
         sprite.Material = _mat;

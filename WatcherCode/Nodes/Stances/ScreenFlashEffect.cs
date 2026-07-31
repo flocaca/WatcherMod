@@ -1,5 +1,4 @@
 using Godot;
-using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Helpers;
 
 namespace Watcher.Code.Stances.Vfx;
@@ -7,11 +6,13 @@ namespace Watcher.Code.Stances.Vfx;
 [GlobalClass]
 public partial class ScreenFlashEffect : CanvasLayer
 {
+    private const string TexturePath = "res://Watcher/images/vfx/screenflash.png";
     private const float FadeInDuration = 0.12f;
     private const float FlashDuration = 0.7f;
     private float _elapsed;
     private Color _flashColor;
 
+    private Texture2D _texture = null!;
     private TextureRect _tex = null!;
 
     public static void Play(Color color)
@@ -28,9 +29,15 @@ public partial class ScreenFlashEffect : CanvasLayer
 
     public override void _Ready()
     {
+        if (!StanceVfx.TryGetTexture(TexturePath, ref _texture))
+        {
+            QueueFree();
+            return;
+        }
+
         _tex = new TextureRect();
         _tex.MouseFilter = Control.MouseFilterEnum.Ignore;
-        _tex.Texture = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/screenflash.png");
+        _tex.Texture = _texture;
         _tex.Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
         _tex.StretchMode = TextureRect.StretchModeEnum.Scale;
         _tex.AnchorRight = 1;
@@ -41,6 +48,12 @@ public partial class ScreenFlashEffect : CanvasLayer
 
     public override void _Process(double delta)
     {
+        if (!IsInstanceValid(_tex))
+        {
+            QueueFree();
+            return;
+        }
+
         _elapsed += (float)delta;
         if (_elapsed >= FlashDuration)
         {

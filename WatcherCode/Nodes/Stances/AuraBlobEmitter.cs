@@ -1,17 +1,26 @@
 using Godot;
-using MegaCrit.Sts2.Core.Assets;
 
 namespace Watcher.Code.Stances.Vfx;
 
 [GlobalClass]
 public partial class AuraBlobEmitter : Node2D
 {
+    private const string TexturePath = "res://Watcher/images/vfx/big_blur.png";
+
     [Export] public Color BlobColor { get; set; } = new(0.15f, 0f, 0.03f);
+
+    private Texture2D _texture = null!;
 
     public override void _Ready()
     {
         const float s = StanceVfx.VfxScale;
         Position *= s;
+        
+        if (!StanceVfx.TryGetTexture(TexturePath, ref _texture))
+        {
+            QueueFree();
+            return;
+        }
 
         var ramp = new Gradient();
         ramp.Offsets = [0f, 0.3f, 0.5f, 0.7f, 1f];
@@ -25,7 +34,7 @@ public partial class AuraBlobEmitter : Node2D
         ];
 
         var cpu = new CpuParticles2D();
-        cpu.Texture = PreloadManager.Cache.GetAsset<Texture2D>("res://Watcher/images/vfx/big_blur.png");
+        cpu.Texture = _texture;
         cpu.Material = new CanvasItemMaterial { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
 
         cpu.Amount = 6;
