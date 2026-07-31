@@ -1,0 +1,58 @@
+[gd_scene load_steps=11 format=3 ]
+
+[ext_resource type="Script" path="res://WatcherCode/Vfx/NDevaFormVfx.cs" id="1_a0iii"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NSpineSpriteBoneFollower.cs" id="2_phtgl"]
+[ext_resource type="Material" path="res://materials/vfx/common/vfx_glow_noise_scale.tres" id="3_ucaxa"]
+[ext_resource type="Texture2D" path="res://images/vfx/common/common_glow.png" id="4_xq7tf"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NParticlesContainer.cs" id="5_lg5vx"]
+[ext_resource type="Shader" path="res://Watcher/scenes/watcher/vfx_deva_form_idle_vfx.gdshader" id="6_i76at"]
+[ext_resource type="Texture2D" path="res://Watcher/images/vfx/deva_from/deva_circle.png" id="7_0a8hx"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NValueRamp.cs" id="8_wbcwx"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_db8d6"]
+shader = ExtResource("6_i76at")
+shader_parameter/ray_count = 6.0
+shader_parameter/ray_speed = 0.4
+shader_parameter/ring_speed = 0.2
+shader_parameter/ring_count = 3.0
+shader_parameter/pulse_speed = 2.0
+shader_parameter/min_alpha = 0.2
+shader_parameter/max_alpha = 0.3
+shader_parameter/core_size = 0.15
+shader_parameter/circle_color = Color(1, 1, 1, 1)
+
+[sub_resource type="Curve" id="Curve_enscj"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[node name="vfx_deva_form_idle_vfx" type="Node2D"]
+scale = Vector2(0.9999999, 0.9999999)
+script = ExtResource("1_a0iii")
+
+[node name="center_pivot" type="Node2D" parent="."]
+position = Vector2(0, -180)
+scale = Vector2(0.99999976, 0.99999976)
+script = ExtResource("2_phtgl")
+_interpolationSpeed = 0.2
+
+[node name="vfx_deva_form_idle_glow" type="Sprite2D" parent="center_pivot"]
+self_modulate = Color(0.9666667, 1, 0, 0.078431375)
+material = ExtResource("3_ucaxa")
+instance_shader_parameters/noise_initial_offset = Vector2(0, 0)
+instance_shader_parameters/use_r_as_alpha = 1.0
+scale = Vector2(4.4999995, 4.4999995)
+texture = ExtResource("4_xq7tf")
+
+[node name="power_active_vfx" type="Node2D" parent="center_pivot"]
+scale = Vector2(0.99999994, 0.99999994)
+script = ExtResource("5_lg5vx")
+
+[node name="vfx_deva_form_circle" type="Sprite2D" parent="center_pivot/power_active_vfx"]
+texture_repeat = 2
+material = SubResource("ShaderMaterial_db8d6")
+texture = ExtResource("7_0a8hx")
+
+[node name="value_ramp" type="Node" parent="."]
+script = ExtResource("8_wbcwx")
+_rampSpeed = 2.0
+_rampCurve = SubResource("Curve_enscj")
