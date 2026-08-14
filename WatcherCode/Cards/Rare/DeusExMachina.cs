@@ -7,6 +7,7 @@ using Watcher.Code.Abstract;
 using Watcher.Code.Cards.Token;
 using Watcher.Code.Character;
 using Watcher.Code.Commands;
+using Watcher.Code.Compatibility;
 
 namespace Watcher.Code.Cards.Rare;
 
@@ -26,6 +27,6 @@ public sealed class DeusExMachina : WatcherCardModel
     {
         if (drawnCard != this) return;
         await WatcherCmd.GiveCards<Miracle>(Owner, DynamicVars.Cards.IntValue, PileType.Hand, animationTime: 0.1f);
-        await CardCmd.Exhaust(choiceContext, this);
+        await CardCmdCompatibility.Exhaust(choiceContext, this);
     }
 }

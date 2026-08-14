@@ -38,6 +38,6 @@ public sealed class Omniscience : WatcherCardModel
         var dupe = card.CreateDupeCompat();
         await CardCmd.AutoPlay(choiceContext, card, null);
         await CardCmd.AutoPlay(choiceContext, dupe, null);
-        if (card.Type != CardType.Power) await CardCmd.Exhaust(choiceContext, card);
+        if (card.Type != CardType.Power) await CardCmdCompatibility.Exhaust(choiceContext, card);
     }
 }
