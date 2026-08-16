@@ -22,8 +22,7 @@ public sealed class FearNoEvil : WatcherCardModel
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay cardPlay)
     {
         // Check if the enemy intends to attack
-        var hasAttackIntent = cardPlay.Target?.Monster?.NextMove.Intents
-            .Any(intent => intent.IntentType is IntentType.Attack or IntentType.DeathBlow) ?? false;
+        var hasAttackIntent = cardPlay.Target?.Monster?.IntendsToAttack ?? false;
         await CommonActions.CardAttack(this, cardPlay).Execute(ctx);
         if (hasAttackIntent) await StanceCmd.EnterCalm(ctx, Owner, cardPlay.Card);
     }
