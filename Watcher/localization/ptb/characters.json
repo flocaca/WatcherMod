@@ -1,0 +1,16 @@
+{
+  "WATCHER-WATCHER.aromaPrinciple": "[sine][purple]Através da disciplina, eu encontro a clareza...[/purple][/sine]",
+  "WATCHER-WATCHER.banter.alive.endTurnPing": "[sine]O momento passa.[/sine]",
+  "WATCHER-WATCHER.banter.dead.endTurnPing": "...",
+  "WATCHER-WATCHER.cardsModifierDescription": "Cartas da Observadora agora aparecerão em recompensas e lojas.",
+  "WATCHER-WATCHER.cardsModifierTitle": "Cartas da Observadora",
+  "WATCHER-WATCHER.description": "Uma asceta cega que veio para \"Avaliador\" o Spire.\nMestra das Posturas divinas.",
+  "WATCHER-WATCHER.eventDeathPrevention": "Eu devo sobreviver. O equilíbrio depende disso.",
+  "WATCHER-WATCHER.goldMonologue": "[sine]Eu não busco riquezas... mas o caminho exige preparação.[/sine]",
+  "WATCHER-WATCHER.possessiveAdjective": "dela",
+  "WATCHER-WATCHER.pronounObject": "ela",
+  "WATCHER-WATCHER.pronounPossessive": "dela",
+  "WATCHER-WATCHER.pronounSubject": "ela",
+  "WATCHER-WATCHER.title": "A Observadora",
+  "WATCHER-WATCHER.titleObject": "A Observadora"
+}
